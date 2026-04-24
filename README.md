@@ -384,18 +384,6 @@ public void onCrateOpened(CrateOpenedEvent e) {
 
 ---
 
-## 🏗️ Building from source
-
-```bash
-git clone https://github.com/itslarss/VaultCrates.git
-cd VaultCrates
-mvn clean package
-```
-
-Output: `target/VaultCrates-1.0.0.jar`
-
----
-
 ## 📄 License
 
 All rights reserved. Do not redistribute or resell without explicit permission from the author.
