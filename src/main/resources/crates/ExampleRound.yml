@@ -1,0 +1,221 @@
+# ============================================================
+# VaultCrates - Example Round Crate
+# Animation: Round
+# ============================================================
+
+Animation: Round
+AnimationVisibilityOption: "Proximity"
+Proximity_Distance: 8
+Material: ENDER_CHEST
+OnlyPlaceable: true
+Enchanted: false
+Name: '&a&lExample &2&lRound &a&lCrate'
+Size: 8
+ShiftInstantlyOpen: false
+ShiftInstantlyOpenAll: false
+PreviewEnabled: true
+PreviewSize: 54
+PreviewTitle: "&e&lPrize Preview"
+
+HologramLines:
+  - "&a&lExample Round Crate"
+  - "&7Right-click to open"
+  - "&7Left-click to preview"
+
+ClosedCrateText:
+  - "&7[&aRound&7] Crate"
+  - "&7(Right-click to open)"
+  - "&7(Left-click to preview)"
+
+CommandsOnPlace: []
+
+# Chat message sent to all players when the crate is opened.
+# Leave empty [] for no message. Placeholders: {player_name} {ColoredReward:1} {ColoredReward:best}
+FinalMessage: []
+
+Lores:
+  - "&7An example crate"
+  - ""
+  - "&aNormal Rewards"
+  - "&a* &f$5000"
+  - "&a* &fDiamonds"
+  - ""
+  - "&2Final Rewards"
+  - "&2* &fMVP Rank"
+
+KeyCrate:
+  Require: true
+  KeysRequired: 1
+  MatchName: true
+  MatchLore: false
+  MatchEnchants: false
+  MatchNBT: true
+  Material: TRIPWIRE_HOOK
+  Name: "&a&lRound Crate Key"
+  Enchanted: true
+  Lores:
+    - ""
+    - "&7Opens a Round Crate"
+
+Prizes:
+  Money5000:
+    Material: EMERALD
+    Glow: true
+    Name: '&a&l$5,000'
+    Rarity: rare
+    Lores: []
+    Enchantments: []
+    GiveItem: false
+    Commands:
+      - eco give {player_name} 5000
+    Chance: 25.0
+    PreviewName: "&a&l$5,000"
+    PreviewLores:
+      - "&7Receive $5,000"
+      - "&7Chance: 25%"
+
+  Diamonds:
+    Material: DIAMOND
+    Amount: 16
+    Glow: false
+    Name: '&b&l16x Diamonds'
+    Rarity: common
+    Lores: []
+    Enchantments: []
+    GiveItem: true
+    Commands: []
+    Chance: 25.0
+    PreviewName: "&b&l16x Diamonds"
+    PreviewLores:
+      - "&7Receive 16 Diamonds"
+
+  Money10000:
+    Material: EMERALD
+    Glow: true
+    Name: '&a&l$10,000'
+    Rarity: epic
+    Lores: []
+    Enchantments: []
+    GiveItem: false
+    GuaranteedReward: true
+    Commands:
+      - eco give {player_name} 10000
+    Chance: 15.0
+    PreviewName: "&a&l$10,000"
+    PreviewLores:
+      - "&7Receive $10,000"
+      - "&7Chance: 15%"
+
+  RandomMoney:
+    Material: GOLD_INGOT
+    Glow: true
+    Name: '&6&l$1,000 - $50,000'
+    Rarity: legendary
+    Lores: []
+    Enchantments: []
+    GiveItem: false
+    RandomNumberMin: 1000
+    RandomNumberMax: 50000
+    RandomNumberDecimals: false
+    Commands:
+      - eco give {player_name} {random_number}
+    Chance: 10.0
+    PreviewName: "&6&l$1,000 - $50,000"
+    PreviewLores:
+      - "&7Random amount of money"
+
+  Tokens32:
+    Material: MAGMA_CREAM
+    Glow: true
+    Name: '&b&l32x Tokens'
+    Rarity: rare
+    Lores: []
+    Enchantments: []
+    GiveItem: false
+    Commands:
+      - tokens give {player_name} 32
+    Chance: 10.0
+    PreviewName: "&b&l32x Tokens"
+    PreviewLores:
+      - "&7Receive 32 Tokens"
+
+  SellWand:
+    Material: GOLDEN_HOE
+    Glow: true
+    Name: '&d&l1x Sell Wand'
+    Rarity: epic
+    Lores: []
+    Enchantments: []
+    GiveItem: false
+    Commands:
+      - sellwand give {player_name} 1
+    Chance: 10.0
+    PreviewName: "&d&l1x Sell Wand"
+    PreviewLores:
+      - "&7A powerful sell wand"
+
+  LegendaryKey:
+    Material: TRIPWIRE_HOOK
+    Glow: true
+    Name: '&e&l1x Legendary Key'
+    Rarity: jackpot
+    Lores: []
+    Enchantments: []
+    GiveItem: false
+    Commands:
+      - vc key give {player_name} Legendary 1
+    Chance: 5.0
+    PreviewName: "&e&l1x Legendary Key"
+    PreviewLores:
+      - "&7Opens a Legendary Crate"
+
+BestPrizes:
+  MVPRank:
+    Material: NETHER_STAR
+    Glow: true
+    Name: '&6&l1x MVP Rank'
+    Rarity: mega_jackpot
+    Lores: []
+    Enchantments: []
+    GiveItem: false
+    Commands:
+      - voucher give {player_name} mvp 1
+    Chance: 30.0
+    MessagesToPlayer: []
+    BroadcastMessages: []
+    BlacklistedPerms:
+      - "rank.mvp"
+    PreviewName: "&6&l1x MVP Rank"
+    PreviewLores:
+      - "&7The rarest reward!"
+
+  BeaconGen:
+    Material: BEACON
+    Glow: true
+    Name: '&c&l1x Beacon Generator'
+    Rarity: jackpot
+    Lores: []
+    Enchantments: []
+    GiveItem: false
+    Commands:
+      - generator give {player_name} beacon 1
+    Chance: 35.0
+    PreviewName: "&c&l1x Beacon Generator"
+    PreviewLores:
+      - "&7A powerful generator"
+
+  Money100k:
+    Material: PLAYER_HEAD
+    Base64Texture: eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZTQ2N2E3YjlkNzZiYTZkMGZlZDc0MzYwMjUzM2ZjOThjODdhZjBjNjBmODBmMzhkYTc3NGY3YTAxYTIwOTNmYSJ9fX0=
+    Glow: false
+    Name: '&e&l$100,000'
+    Rarity: legendary
+    Lores: []
+    Enchantments: []
+    GiveItem: false
+    Commands:
+      - eco give {player_name} 100000
+    Chance: 35.0
+    PreviewName: "&e&l$100,000"
+    PreviewLores:
+      - "&7Receive $100,000"

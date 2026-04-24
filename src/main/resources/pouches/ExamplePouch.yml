@@ -1,0 +1,33 @@
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  VaultCrates — ExamplePouch.yml
+#  A money pouch that gives a random cash reward
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Name: "MoneyPouch"
+DisplayName: "&6&lMoney Pouch"
+
+# Item appearance
+Material: SUNFLOWER
+Glow: true
+CustomModelData: 0
+Lore:
+  - "&7Right-click to claim"
+  - "&7between &a$500 &7and &a$5,000&7!"
+
+# Sound played when the pouch is opened
+Sound: ENTITY_EXPERIENCE_ORB_PICKUP
+
+# Commands executed for the player who opens the pouch.
+# {random_number} is replaced with a random integer between MinNumber and MaxNumber.
+# {player_name} is replaced with the player's name.
+Commands:
+  - "eco give {player_name} {random_number}"
+  - "tell {player_name} &aYou found &e${random_number} &ainside the pouch!"
+
+# Random number range for {random_number}
+MinNumber: 500
+MaxNumber: 5000
+
+# Hologram shown above the opening effect (temporary)
+HologramLines:
+  - "&6&l+${random_number}"

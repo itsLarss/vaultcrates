@@ -1,0 +1,113 @@
+# ============================================================
+# VaultCrates Nachrichten (Deutsch)
+# Farbcodes: & + 0-9/a-f/k-o/r
+# Platzhalter: {player}, {crate}, {pouch}, {amount}, {key}, {balance}, {time}
+# ============================================================
+
+prefix: "&8[&6VC&8] &r"
+
+# Allgemeine Fehler
+no-permission: "&cDu hast keine Berechtigung, diesen Befehl auszuführen."
+player-only: "&cDieser Befehl kann nur von Spielern ausgeführt werden."
+player-not-found: "&cSpieler &e{player} &cwurde nicht gefunden."
+crate-not-found: "&cCrate &e{crate} &cwurde nicht gefunden."
+pouch-not-found: "&cPouch &e{pouch} &cwurde nicht gefunden."
+invalid-amount: "&cUngültige Menge. Bitte gib eine gültige Zahl ein."
+unknown-subcommand: "&cUnbekannter Unterbefehl. Nutze &e/vc help &cfür Hilfe."
+console-only: "&cDieser Befehl kann nur von der Konsole ausgeführt werden."
+
+# Crate Befehle
+crate-given: "&aDu hast &e{amount}x &6{crate} Crate &aan &e{player} &agegeben."
+crate-given-silent: "&aDu hast &e{amount}x &6{crate} Crate &astill an &e{player} &agegeben."
+crate-received: "&aDu hast &e{amount}x &6{crate} Crate &aerhalten."
+crate-given-all: "&aDu hast &e{amount}x &6{crate} Crate &aan alle Online-Spieler gegeben &7(&e{count} &7Spieler)."
+crate-given-all-received: "&aDu hast &e{amount}x &6{crate} Crate &avon einem Admin erhalten!"
+
+# Crate erstellen
+crate-created: "&aCrate &e{crate} &awurde erfolgreich erstellt!"
+crate-already-exists: "&cCrate &e{crate} &cexistiert bereits."
+crate-create-failed: "&cCrate konnte nicht erstellt werden. Überprüfe die Konsole."
+
+# Key Befehle
+key-given: "&aDu hast &e{amount}x &6{key} Key &aan &e{player} &agegeben."
+key-given-received: "&aDu hast &e{amount}x &6{key} Key &aerhalten."
+key-set: "&aDu hast den &6{key} Key&a-Stand von &e{player} &aauf &e{amount} &agesetzt."
+key-balance: "&e{player}&a hat &e{balance}x &6{key} Key(s)&a."
+key-balance-self: "&aDu hast &e{balance}x &6{key} Key(s)&a."
+key-withdrawn: "&aDu hast &e{amount}x &6{key} Key(s) &aabgehoben."
+key-withdrawn-failed: "&cDein Inventar ist voll! Du konntest keine Keys abheben."
+key-not-enough: "&cDu hast nicht genug &6{key} Keys&c. Du hast &e{balance}&c."
+key-given-all: "&aDu hast &e{amount}x &6{key} Key &aan alle Online-Spieler gegeben &7(&e{count} &7Spieler)."
+key-given-all-received: "&aDu hast &e{amount}x &6{key} Key &avon einem Admin erhalten!"
+
+# Pouch Befehle
+pouch-given: "&aDu hast &e{amount}x &b{pouch} Pouch &aan &e{player} &agegeben."
+pouch-given-silent: "&aDu hast &e{amount}x &b{pouch} Pouch &astill an &e{player} &agegeben."
+pouch-given-received: "&aDu hast &e{amount}x &b{pouch} Pouch &aerhalten."
+pouch-given-all: "&aDu hast &e{amount}x &b{pouch} Pouch &aan alle Online-Spieler gegeben &7(&e{count} &7Spieler)."
+pouch-given-all-received: "&aDu hast &e{amount}x &b{pouch} Pouch &avon einem Admin erhalten!"
+
+# Reload
+reload-success: "&aDie Konfiguration wurde erfolgreich neu geladen. &7(&e{crates} Crates&7, &e{pouches} Pouches&7 geladen)"
+reload-failed: "&cFehler beim Neu-Laden der Konfiguration. Überprüfe die Konsole."
+
+# Listen
+crate-list-header: "&8&m----&r &6&lVerfügbare Crates &8&m----"
+crate-list-entry: "  &7- &6{crate} &8(&7{prizes} Preise&8)"
+crate-list-footer: "&8&m----&r &7Gesamt: &e{count} Crates &8&m----"
+crate-list-empty: "&cEs sind keine Crates konfiguriert."
+
+pouch-list-header: "&8&m----&r &b&lVerfügbare Pouches &8&m----"
+pouch-list-entry: "  &7- &b{pouch}"
+pouch-list-footer: "&8&m----&r &7Gesamt: &e{count} Pouches &8&m----"
+pouch-list-empty: "&cEs sind keine Pouches konfiguriert."
+
+# Fehler-Diagnose
+errors-header: "&8&m----&r &c&lPlugin-Fehler &8&m----"
+errors-entry: "  &c- &7{error}"
+no-errors: "&aEs wurden keine Fehler gefunden. Alles ist in Ordnung!"
+
+# Crate öffnen
+no-key: "&cDu hast keinen &6{crate} Key&c, um diese Crate zu öffnen."
+no-virtual-key: "&cDu hast keinen virtuellen &6{crate} Key&c. Du hast &e{balance}&c."
+crate-opened: "&aDu hast eine &6{crate} Crate &ageöffnet und &e{reward} &agewonnen!"
+crate-blocked: "&cDiese Crate ist derzeit gesperrt."
+crate-in-use: "&cDiese Crate wird gerade von einem anderen Spieler verwendet."
+crate-animation-running: "&cWarte, bis die Animation beendet ist."
+inventory-full: "&cDein Inventar ist voll! Dein Preis wurde auf den Boden geworfen."
+creative-blocked: "&cDu kannst keine Crates im Kreativmodus öffnen."
+adventure-blocked: "&cDu kannst keine Crates im Abenteuermodus öffnen."
+
+# Cooldown
+cooldown: "&cDu musst noch &e{time} Sekunden &cwarten, bevor du diese Crate erneut öffnen kannst."
+
+# Berechtigungssperre
+blacklisted-perm: "&cDu hast bereits diesen Preis oder eine bessere Version davon."
+
+# Editor
+editor-opened: "&aDer Crate-Editor für &6{crate} &awurde geöffnet."
+editor-saved: "&aDie Änderungen an &6{crate} &awurden gespeichert."
+editor-not-found: "&cCrate nicht gefunden. Der Editor konnte nicht geöffnet werden."
+keyeditor-opened: "&aDer Key-Editor für &6{crate} &awurde geöffnet."
+
+# Hilfe
+help-header: "&8&m========&r &6&lVaultCrates Hilfe &8&m========"
+help-give: "  &6/vc give &e<Spieler> <Crate> [Menge] &7- Crate geben"
+help-sgive: "  &6/vc sgive &e<Spieler> <Crate> [Menge] &7- Crate still geben"
+help-giveall: "  &6/vc giveall &e<Crate> [Menge] &7- Crate an alle geben"
+help-key-give: "  &6/vc key give &e<Spieler> <Crate> [Menge] &7- Key geben"
+help-key-set: "  &6/vc key set &e<Spieler> <Crate> <Menge> &7- Key-Stand setzen"
+help-key-balance: "  &6/vc key balance &e[Spieler] <Crate> &7- Key-Stand anzeigen"
+help-key-giveall: "  &6/vc key giveall &e<Crate> [Menge] &7- Keys an alle geben"
+help-key-withdraw: "  &6/vc key withdraw &e<Crate> [Menge] &7- Virtuelle Keys abheben"
+help-pouch-give: "  &6/vc pouch give &e<Spieler> <Pouch> [Menge] &7- Pouch geben"
+help-pouch-sgive: "  &6/vc pouch sgive &e<Spieler> <Pouch> [Menge] &7- Pouch still geben"
+help-pouch-giveall: "  &6/vc pouch giveall &e<Pouch> [Menge] &7- Pouch an alle geben"
+help-pouch-list: "  &6/vc pouch list &7- Alle Pouches auflisten"
+help-create: "  &6/vc create &e<Name> &7- Neue Crate erstellen"
+help-reload: "  &6/vc reload &7- Plugin neu laden"
+help-list: "  &6/vc list &7- Alle Crates auflisten"
+help-errors: "  &6/vc errors &7- Plugin-Fehler anzeigen"
+help-editor: "  &6/vc editor &e<Crate> &7- In-Game Editor öffnen"
+help-keyeditor: "  &6/vc keyeditor &e<Crate> &7- Key-Editor öffnen"
+help-footer: "&8&m==============================="

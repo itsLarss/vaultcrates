@@ -1,0 +1,137 @@
+# ============================================================
+# VaultCrates Messages (Français)
+# Codes couleur : & + 0-9/a-f/k-o/r
+# Variables : {player}, {crate}, {pouch}, {amount}, {key}, {balance}, {time}
+# ============================================================
+
+prefix: "&8[&6VC&8] &r"
+
+# ============================================================
+# Erreurs générales
+# ============================================================
+no-permission: "&cVous n'avez pas la permission d'exécuter cette commande."
+player-only: "&cCette commande ne peut être exécutée que par un joueur."
+player-not-found: "&cJoueur &e{player} &cintrouvable."
+crate-not-found: "&cCaisse &e{crate} &cintrouvable."
+pouch-not-found: "&cSachet &e{pouch} &cintrouvable."
+invalid-amount: "&cQuantité invalide. Veuillez entrer un nombre valide."
+unknown-subcommand: "&cSous-commande inconnue. Utilisez &e/vc help &cpour de l'aide."
+console-only: "&cCette commande ne peut être exécutée que depuis la console."
+
+# ============================================================
+# Commandes Caisse
+# ============================================================
+crate-given: "&aVous avez donné &e{amount}x &6{crate} Caisse &àa &e{player}&a."
+crate-given-silent: "&aVous avez donné silencieusement &e{amount}x &6{crate} Caisse &à &e{player}&a."
+crate-received: "&aVous avez reçu &e{amount}x &6{crate} Caisse&a."
+crate-given-all: "&aVous avez donné &e{amount}x &6{crate} Caisse &à tous les joueurs en ligne &7(&e{count} &7joueurs)."
+crate-given-all-received: "&aVous avez reçu &e{amount}x &6{crate} Caisse &ad'un administrateur !"
+
+# Création de caisse
+crate-created: "&aCaisse &e{crate} &acréée avec succès !"
+crate-already-exists: "&cLa caisse &e{crate} &cexiste déjà."
+crate-create-failed: "&cÉchec de la création de la caisse. Vérifiez la console."
+
+# ============================================================
+# Commandes Clé
+# ============================================================
+key-given: "&aVous avez donné &e{amount}x &6{key} Clé &à &e{player}&a."
+key-given-received: "&aVous avez reçu &e{amount}x &6{key} Clé&a."
+key-set: "&aVous avez défini le solde de clé &6{key} &ade &e{player} &àa &e{amount}&a."
+key-balance: "&e{player}&a possède &e{balance}x &6{key} Clé(s)&a."
+key-balance-self: "&aVous possédez &e{balance}x &6{key} Clé(s)&a."
+key-withdrawn: "&aVous avez retiré &e{amount}x &6{key} Clé(s)&a."
+key-withdrawn-failed: "&cVotre inventaire est plein ! Impossible de retirer les clés."
+key-not-enough: "&cVous n'avez pas assez de &6{key} Clés&c. Vous en avez &e{balance}&c."
+key-given-all: "&aVous avez donné &e{amount}x &6{key} Clé &à tous les joueurs en ligne &7(&e{count} &7joueurs)."
+key-given-all-received: "&aVous avez reçu &e{amount}x &6{key} Clé &ad'un administrateur !"
+
+# ============================================================
+# Commandes Sachet
+# ============================================================
+pouch-given: "&aVous avez donné &e{amount}x &b{pouch} Sachet &à &e{player}&a."
+pouch-given-silent: "&aVous avez donné silencieusement &e{amount}x &b{pouch} Sachet &à &e{player}&a."
+pouch-given-received: "&aVous avez reçu &e{amount}x &b{pouch} Sachet&a."
+pouch-given-all: "&aVous avez donné &e{amount}x &b{pouch} Sachet &à tous les joueurs en ligne &7(&e{count} &7joueurs)."
+pouch-given-all-received: "&aVous avez reçu &e{amount}x &b{pouch} Sachet &ad'un administrateur !"
+
+# ============================================================
+# Rechargement
+# ============================================================
+reload-success: "&aConfiguration rechargée avec succès. &7(&e{crates} caisses&7, &e{pouches} sachets&7 chargés)"
+reload-failed: "&cÉchec du rechargement de la configuration. Vérifiez la console."
+
+# ============================================================
+# Listes
+# ============================================================
+crate-list-header: "&8&m----&r &6&lCaisses disponibles &8&m----"
+crate-list-entry: "  &7- &6{crate} &8(&7{prizes} récompenses&8)"
+crate-list-footer: "&8&m----&r &7Total : &e{count} caisses &8&m----"
+crate-list-empty: "&cAucune caisse n'est configurée."
+
+pouch-list-header: "&8&m----&r &b&lSachets disponibles &8&m----"
+pouch-list-entry: "  &7- &b{pouch}"
+pouch-list-footer: "&8&m----&r &7Total : &e{count} sachets &8&m----"
+pouch-list-empty: "&cAucun sachet n'est configuré."
+
+# ============================================================
+# Diagnostic d'erreurs
+# ============================================================
+errors-header: "&8&m----&r &c&lErreurs du plugin &8&m----"
+errors-entry: "  &c- &7{error}"
+no-errors: "&aAucune erreur trouvée. Tout semble correct !"
+
+# ============================================================
+# Ouverture de caisse
+# ============================================================
+no-key: "&cVous n'avez pas de &6{crate} Clé &cpour ouvrir cette caisse."
+no-virtual-key: "&cVous n'avez pas de &6{crate} Clé &cvirtuelle. Vous en avez &e{balance}&c."
+crate-opened: "&aVous avez ouvert une &6{crate} Caisse &aet gagné &e{reward}&a !"
+crate-blocked: "&cCette caisse est actuellement verrouillée."
+crate-in-use: "&cCette caisse est déjà utilisée par un autre joueur."
+crate-animation-running: "&cAttendez la fin de l'animation."
+inventory-full: "&cVotre inventaire est plein ! Votre récompense a été jetée au sol."
+creative-blocked: "&cVous ne pouvez pas ouvrir de caisses en mode créatif."
+adventure-blocked: "&cVous ne pouvez pas ouvrir de caisses en mode aventure."
+
+# ============================================================
+# Temps de recharge
+# ============================================================
+cooldown: "&cVous devez attendre &e{time} secondes &cavant d'ouvrir à nouveau cette caisse."
+
+# ============================================================
+# Permission exclue
+# ============================================================
+blacklisted-perm: "&cVous possédez déjà cette récompense ou une version supérieure."
+
+# ============================================================
+# Éditeur
+# ============================================================
+editor-opened: "&aÉditeur de caisse pour &6{crate} &aouvert."
+editor-saved: "&aModifications de &6{crate} &asauvegardées."
+editor-not-found: "&cCaisse introuvable. Impossible d'ouvrir l'éditeur."
+keyeditor-opened: "&aÉditeur de clé pour &6{crate} &aouvert."
+
+# ============================================================
+# Aide
+# ============================================================
+help-header: "&8&m========&r &6&lAide VaultCrates &8&m========"
+help-give: "  &6/vc give &e<joueur> <caisse> [quantité] &7- Donner une clé physique"
+help-sgive: "  &6/vc sgive &e<joueur> <caisse> [quantité] &7- Donner silencieusement"
+help-giveall: "  &6/vc giveall &e<caisse> [quantité] &7- Donner à tous les connectés"
+help-key-give: "  &6/vc key give &e<joueur> <caisse> [quantité] &7- Donner une clé virtuelle"
+help-key-set: "  &6/vc key set &e<joueur> <caisse> <quantité> &7- Définir le solde de clé"
+help-key-balance: "  &6/vc key balance &e[joueur] <caisse> &7- Vérifier le solde de clé"
+help-key-giveall: "  &6/vc key giveall &e<caisse> [quantité] &7- Donner des clés à tous"
+help-key-withdraw: "  &6/vc key withdraw &e<caisse> [quantité] &7- Retirer des clés virtuelles"
+help-pouch-give: "  &6/vc pouch give &e<joueur> <sachet> [quantité] &7- Donner un sachet"
+help-pouch-sgive: "  &6/vc pouch sgive &e<joueur> <sachet> [quantité] &7- Donner silencieusement"
+help-pouch-giveall: "  &6/vc pouch giveall &e<sachet> [quantité] &7- Donner à tous les connectés"
+help-pouch-list: "  &6/vc pouch list &7- Lister tous les sachets"
+help-create: "  &6/vc create &e<nom> &7- Créer une nouvelle caisse"
+help-reload: "  &6/vc reload &7- Recharger le plugin"
+help-list: "  &6/vc list &7- Lister toutes les caisses"
+help-errors: "  &6/vc errors &7- Afficher les erreurs de chargement"
+help-editor: "  &6/vc editor &e<caisse> &7- Ouvrir l'éditeur graphique"
+help-keyeditor: "  &6/vc keyeditor &e<caisse> &7- Ouvrir l'éditeur de clé"
+help-footer: "&8&m==============================="

@@ -1,0 +1,195 @@
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  VaultCrates — ExampleCosmic.yml
+#  Cosmic-themed crate with a starfield animation
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Name: "Cosmic Crate"
+Animation: COSMIC
+AnimationVisibility: ALL
+
+# Block the crate is displayed as (used when placed via /vc give item)
+Block: BEACON
+# Optional: ItemsAdder model for the crate block item (requires ItemsAdder plugin)
+# IAModel: "namespace:crate_id"
+
+# Hologram lines shown above the crate block
+HologramLines:
+  - "&b&l✦ COSMIC CRATE ✦"
+  - "&7Right-click to open"
+  - "&b&lRequires a Cosmic Key"
+
+# Whether players can left-click to see a reward preview
+PreviewEnabled: true
+
+# When a player sneaks+right-clicks, open instantly (skip animation)
+ShiftInstantlyOpen: false
+
+# Commands executed on the console when this crate is placed
+CommandsOnPlace: []
+
+# ──────────────────────────────────────────────────
+#  Key Configuration
+# ──────────────────────────────────────────────────
+Key:
+  Require: true
+  KeysRequired: 1
+
+  # Physical key item appearance
+  Material: NETHER_STAR
+  Glow: true
+  CustomModelData: 0
+  Name: "&b&lCosmic Key"
+  Lore:
+    - "&7Use this key to open"
+    - "&7the &b&lCosmic Crate&7."
+  # Match mode for physical keys
+  MatchNBT: true
+  MatchName: false
+  MatchLore: false
+
+# ──────────────────────────────────────────────────
+#  Rewards
+# ──────────────────────────────────────────────────
+# Total weight: 100.  Each reward's chance is its share of the total weight.
+# Rewards with Guaranteed: true are ALWAYS given regardless of chance.
+Rewards:
+
+  # ── Guaranteed ─────────────────────────────────
+  consolation_xp:
+    Name: "&aXP Bonus"
+    Chance: 15
+    Rarity: common
+    Material: EXPERIENCE_BOTTLE
+    Amount: 5
+    Glow: false
+    GiveItem: false
+    Lore: []
+    Commands:
+      - "xp give {player_name} 500 points"
+    Permission: ""
+
+  # ── High-value ──────────────────────────────────
+  netherite_ingot:
+    Name: "&c&lNetherite Ingot"
+    Chance: 5
+    Guaranteed: false
+    Rarity: jackpot
+    Material: NETHERITE_INGOT
+    Amount: 1
+    Glow: true
+    GiveItem: true
+    Lore:
+      - "&7A rare cosmic drop."
+    Commands: []
+    Permission: ""
+
+  diamond_sword:
+    Name: "&b&lCosmic Blade"
+    Chance: 8
+    Guaranteed: false
+    Rarity: legendary
+    Material: DIAMOND_SWORD
+    Amount: 1
+    Glow: true
+    GiveItem: true
+    Lore:
+      - "&7Forged from stardust."
+    Enchantments:
+      SHARPNESS: 5
+      UNBREAKING: 3
+      MENDING: 1
+    Commands: []
+    Permission: ""
+
+  elytra:
+    Name: "&b&lStar Wings"
+    Chance: 3
+    Guaranteed: false
+    Rarity: mega_jackpot
+    Material: ELYTRA
+    Amount: 1
+    Glow: true
+    GiveItem: true
+    Lore:
+      - "&7Glide across the cosmos."
+    Enchantments:
+      UNBREAKING: 3
+      MENDING: 1
+    Commands: []
+    Permission: ""
+
+  # ── Mid-value ───────────────────────────────────
+  $5000:
+    Name: "&6$5,000"
+    Chance: 12
+    Guaranteed: false
+    Rarity: epic
+    Material: GOLD_INGOT
+    Amount: 1
+    Glow: false
+    GiveItem: false
+    Lore:
+      - "&7Cosmic wealth."
+    Commands:
+      - "eco give {player_name} 5000"
+    Permission: ""
+
+  $2500:
+    Name: "&6$2,500"
+    Chance: 20
+    Guaranteed: false
+    Rarity: rare
+    Material: GOLD_NUGGET
+    Amount: 1
+    Glow: false
+    GiveItem: false
+    Lore: []
+    Commands:
+      - "eco give {player_name} 2500"
+    Permission: ""
+
+  # ── Common ──────────────────────────────────────
+  diamonds:
+    Name: "&b10x Diamonds"
+    Chance: 25
+    Guaranteed: false
+    Rarity: common
+    Material: DIAMOND
+    Amount: 10
+    Glow: false
+    GiveItem: true
+    Lore: []
+    Commands: []
+    Permission: ""
+
+  enchanted_golden_apple:
+    Name: "&6Enchanted Golden Apple"
+    Chance: 10
+    Guaranteed: false
+    Rarity: rare
+    Material: ENCHANTED_GOLDEN_APPLE
+    Amount: 1
+    Glow: false
+    GiveItem: true
+    Lore: []
+    Commands: []
+    Permission: ""
+
+  iron_block:
+    Name: "&75x Iron Block"
+    Chance: 17
+    Guaranteed: false
+    Rarity: common
+    Material: IRON_BLOCK
+    Amount: 5
+    Glow: false
+    GiveItem: true
+    Lore: []
+    Commands: []
+    Permission: ""
+
+# ──────────────────────────────────────────────────
+#  Reward broadcast shown to ALL players when crate opens
+# ──────────────────────────────────────────────────
+# Chat message sent to all players — leave empty for no message
+FinalMessage: []

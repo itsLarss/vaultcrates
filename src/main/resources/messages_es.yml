@@ -1,0 +1,137 @@
+# ============================================================
+# VaultCrates Messages (Español)
+# Códigos de color: & + 0-9/a-f/k-o/r
+# Variables: {player}, {crate}, {pouch}, {amount}, {key}, {balance}, {time}
+# ============================================================
+
+prefix: "&8[&6VC&8] &r"
+
+# ============================================================
+# Errores generales
+# ============================================================
+no-permission: "&cNo tienes permiso para ejecutar este comando."
+player-only: "&cEste comando solo puede ser ejecutado por jugadores."
+player-not-found: "&cJugador &e{player} &cno encontrado."
+crate-not-found: "&cCajón &e{crate} &cno encontrado."
+pouch-not-found: "&cBolsa &e{pouch} &cno encontrada."
+invalid-amount: "&cCantidad inválida. Por favor, ingresa un número válido."
+unknown-subcommand: "&cSubcomando desconocido. Usa &e/vc help &cpara obtener ayuda."
+console-only: "&cEste comando solo puede ser ejecutado desde la consola."
+
+# ============================================================
+# Comandos de Cajón
+# ============================================================
+crate-given: "&aHas dado &e{amount}x &6{crate} Cajón &aa &e{player}&a."
+crate-given-silent: "&aHas dado silenciosamente &e{amount}x &6{crate} Cajón &aa &e{player}&a."
+crate-received: "&aHas recibido &e{amount}x &6{crate} Cajón&a."
+crate-given-all: "&aHas dado &e{amount}x &6{crate} Cajón &aa todos los jugadores en línea &7(&e{count} &7jugadores)."
+crate-given-all-received: "&aHas recibido &e{amount}x &6{crate} Cajón &ade un administrador!"
+
+# Creación de cajón
+crate-created: "&aCajón &e{crate} &acreado exitosamente!"
+crate-already-exists: "&cEl cajón &e{crate} &cya existe."
+crate-create-failed: "&cError al crear el cajón. Revisa la consola."
+
+# ============================================================
+# Comandos de Llave
+# ============================================================
+key-given: "&aHas dado &e{amount}x &6{key} Llave &aa &e{player}&a."
+key-given-received: "&aHas recibido &e{amount}x &6{key} Llave&a."
+key-set: "&aHas establecido el saldo de &6{key} Llave &ade &e{player} &aa &e{amount}&a."
+key-balance: "&e{player}&a tiene &e{balance}x &6{key} Llave(s)&a."
+key-balance-self: "&aTienes &e{balance}x &6{key} Llave(s)&a."
+key-withdrawn: "&aHas retirado &e{amount}x &6{key} Llave(s)&a."
+key-withdrawn-failed: "&cTu inventario está lleno! No se pudieron retirar las llaves."
+key-not-enough: "&cNo tienes suficientes &6{key} Llaves&c. Tienes &e{balance}&c."
+key-given-all: "&aHas dado &e{amount}x &6{key} Llave &aa todos los jugadores en línea &7(&e{count} &7jugadores)."
+key-given-all-received: "&aHas recibido &e{amount}x &6{key} Llave &ade un administrador!"
+
+# ============================================================
+# Comandos de Bolsa
+# ============================================================
+pouch-given: "&aHas dado &e{amount}x &b{pouch} Bolsa &aa &e{player}&a."
+pouch-given-silent: "&aHas dado silenciosamente &e{amount}x &b{pouch} Bolsa &aa &e{player}&a."
+pouch-given-received: "&aHas recibido &e{amount}x &b{pouch} Bolsa&a."
+pouch-given-all: "&aHas dado &e{amount}x &b{pouch} Bolsa &aa todos los jugadores en línea &7(&e{count} &7jugadores)."
+pouch-given-all-received: "&aHas recibido &e{amount}x &b{pouch} Bolsa &ade un administrador!"
+
+# ============================================================
+# Recarga
+# ============================================================
+reload-success: "&aConfiguración recargada exitosamente. &7(&e{crates} cajones&7, &e{pouches} bolsas&7 cargados)"
+reload-failed: "&cError al recargar la configuración. Revisa la consola."
+
+# ============================================================
+# Listas
+# ============================================================
+crate-list-header: "&8&m----&r &6&lCajones disponibles &8&m----"
+crate-list-entry: "  &7- &6{crate} &8(&7{prizes} recompensas&8)"
+crate-list-footer: "&8&m----&r &7Total: &e{count} cajones &8&m----"
+crate-list-empty: "&cNo hay cajones configurados."
+
+pouch-list-header: "&8&m----&r &b&lBolsas disponibles &8&m----"
+pouch-list-entry: "  &7- &b{pouch}"
+pouch-list-footer: "&8&m----&r &7Total: &e{count} bolsas &8&m----"
+pouch-list-empty: "&cNo hay bolsas configuradas."
+
+# ============================================================
+# Diagnóstico de errores
+# ============================================================
+errors-header: "&8&m----&r &c&lErrores del plugin &8&m----"
+errors-entry: "  &c- &7{error}"
+no-errors: "&aNo se encontraron errores. ¡Todo está bien!"
+
+# ============================================================
+# Apertura de cajón
+# ============================================================
+no-key: "&cNo tienes una &6{crate} Llave &cpara abrir este cajón."
+no-virtual-key: "&cNo tienes una &6{crate} Llave &cvirtual. Tienes &e{balance}&c."
+crate-opened: "&aAbriste un &6{crate} Cajón &ay ganaste &e{reward}&a!"
+crate-blocked: "&cEste cajón está actualmente bloqueado."
+crate-in-use: "&cEste cajón está siendo usado por otro jugador."
+crate-animation-running: "&cEspera a que termine la animación."
+inventory-full: "&cTu inventario está lleno! Tu recompensa fue tirada al suelo."
+creative-blocked: "&cNo puedes abrir cajones en modo creativo."
+adventure-blocked: "&cNo puedes abrir cajones en modo aventura."
+
+# ============================================================
+# Tiempo de espera
+# ============================================================
+cooldown: "&cDebes esperar &e{time} segundos &cantes de abrir este cajón nuevamente."
+
+# ============================================================
+# Permiso en lista negra
+# ============================================================
+blacklisted-perm: "&cYa tienes esta recompensa o una versión superior."
+
+# ============================================================
+# Editor
+# ============================================================
+editor-opened: "&aEditor de cajón para &6{crate} &aabierto."
+editor-saved: "&aCambios en &6{crate} &aguardados."
+editor-not-found: "&cCajón no encontrado. No se pudo abrir el editor."
+keyeditor-opened: "&aEditor de llave para &6{crate} &aabierto."
+
+# ============================================================
+# Ayuda
+# ============================================================
+help-header: "&8&m========&r &6&lAyuda VaultCrates &8&m========"
+help-give: "  &6/vc give &e<jugador> <cajón> [cantidad] &7- Dar llave física"
+help-sgive: "  &6/vc sgive &e<jugador> <cajón> [cantidad] &7- Dar silenciosamente"
+help-giveall: "  &6/vc giveall &e<cajón> [cantidad] &7- Dar a todos los conectados"
+help-key-give: "  &6/vc key give &e<jugador> <cajón> [cantidad] &7- Dar llave virtual"
+help-key-set: "  &6/vc key set &e<jugador> <cajón> <cantidad> &7- Establecer saldo de llave"
+help-key-balance: "  &6/vc key balance &e[jugador] <cajón> &7- Ver saldo de llave"
+help-key-giveall: "  &6/vc key giveall &e<cajón> [cantidad] &7- Dar llaves a todos"
+help-key-withdraw: "  &6/vc key withdraw &e<cajón> [cantidad] &7- Retirar llaves virtuales"
+help-pouch-give: "  &6/vc pouch give &e<jugador> <bolsa> [cantidad] &7- Dar bolsa"
+help-pouch-sgive: "  &6/vc pouch sgive &e<jugador> <bolsa> [cantidad] &7- Dar silenciosamente"
+help-pouch-giveall: "  &6/vc pouch giveall &e<bolsa> [cantidad] &7- Dar a todos los conectados"
+help-pouch-list: "  &6/vc pouch list &7- Listar todas las bolsas"
+help-create: "  &6/vc create &e<nombre> &7- Crear un nuevo cajón"
+help-reload: "  &6/vc reload &7- Recargar el plugin"
+help-list: "  &6/vc list &7- Listar todos los cajones"
+help-errors: "  &6/vc errors &7- Ver errores de carga"
+help-editor: "  &6/vc editor &e<cajón> &7- Abrir editor gráfico"
+help-keyeditor: "  &6/vc keyeditor &e<cajón> &7- Abrir editor de llave"
+help-footer: "&8&m==============================="

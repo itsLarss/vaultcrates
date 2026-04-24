@@ -1,0 +1,129 @@
+name: VaultCrates
+version: 1.0.0
+main: de.itslarss.vaultcrates.VaultCrates
+api-version: "1.21"
+author: itslarss
+description: A feature-rich crate plugin for Paper 1.21.x
+website: https://github.com/itslarss/VaultCrates
+softdepend: [PlaceholderAPI, Vault, ItemsAdder, Citizens, Oraxen, Nexo, ExecutableItems, MMOItems, ZNPCs, ZNPCsPlus, FancyNpcs]
+
+commands:
+  vc:
+    description: Main VaultCrates command
+    usage: /vc <subcommand>
+    aliases: [vaultcrates, crate]
+    permission: vaultcrates.use
+
+permissions:
+  vaultcrates.*:
+    description: Gives access to all VaultCrates permissions
+    default: op
+    children:
+      vaultcrates.admin: true
+      vaultcrates.give: true
+      vaultcrates.sgive: true
+      vaultcrates.giveall: true
+      vaultcrates.reload: true
+      vaultcrates.list: true
+      vaultcrates.errors: true
+      vaultcrates.key.give: true
+      vaultcrates.key.set: true
+      vaultcrates.key.balance: true
+      vaultcrates.key.giveall: true
+      vaultcrates.key.withdraw: true
+      vaultcrates.pouch.give: true
+      vaultcrates.pouch.sgive: true
+      vaultcrates.pouch.list: true
+      vaultcrates.pouch.giveall: true
+      vaultcrates.open: true
+      vaultcrates.bypass: true
+      vaultcrates.editor: true
+      vaultcrates.use: true
+
+  vaultcrates.admin:
+    description: Full administrator access to VaultCrates
+    default: op
+
+  vaultcrates.give:
+    description: Allows giving crates to players
+    default: op
+
+  vaultcrates.sgive:
+    description: Allows silently giving crates to players
+    default: op
+
+  vaultcrates.giveall:
+    description: Allows giving crates to all online players
+    default: op
+
+  vaultcrates.reload:
+    description: Allows reloading the VaultCrates configuration
+    default: op
+
+  vaultcrates.list:
+    description: Allows listing all available crates
+    default: op
+
+  vaultcrates.errors:
+    description: Allows viewing plugin errors and diagnostics
+    default: op
+
+  vaultcrates.key.give:
+    description: Allows giving crate keys to players
+    default: op
+
+  vaultcrates.key.set:
+    description: Allows setting a player's virtual key balance
+    default: op
+
+  vaultcrates.key.balance:
+    description: Allows checking a player's virtual key balance
+    default: op
+
+  vaultcrates.key.giveall:
+    description: Allows giving crate keys to all online players
+    default: op
+
+  vaultcrates.key.withdraw:
+    description: Allows withdrawing virtual keys as physical keys
+    default: op
+
+  vaultcrates.pouch.give:
+    description: Allows giving pouches to players
+    default: op
+
+  vaultcrates.pouch.sgive:
+    description: Allows silently giving pouches to players
+    default: op
+
+  vaultcrates.pouch.list:
+    description: Allows listing all available pouches
+    default: op
+
+  vaultcrates.pouch.giveall:
+    description: Allows giving pouches to all online players
+    default: op
+
+  vaultcrates.open:
+    description: Allows players to open crates
+    default: true
+
+  vaultcrates.bypass:
+    description: Allows bypassing crate restrictions (cooldowns, blacklisted perms, etc.)
+    default: op
+
+  vaultcrates.editor:
+    description: Allows opening the in-game crate editor
+    default: op
+
+  vaultcrates.use:
+    description: Allows players to see /vc help and use basic commands
+    default: true
+
+  vaultcrates.shop:
+    description: Allows access to the key shop (/vc shop)
+    default: true
+
+  vaultcrates.linknpc:
+    description: Allows linking NPCs to crates (/vc linknpc)
+    default: op
