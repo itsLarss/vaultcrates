@@ -371,17 +371,6 @@ public void onCrateOpened(CrateOpenedEvent e) {
 }
 ```
 
-**Maven dependency:**
-
-```xml
-<dependency>
-    <groupId>de.itslarss</groupId>
-    <artifactId>VaultCrates</artifactId>
-    <version>1.0.0</version>
-    <scope>provided</scope>
-</dependency>
-```
-
 ---
 
 ## 📄 License
