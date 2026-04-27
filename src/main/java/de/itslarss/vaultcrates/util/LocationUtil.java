@@ -73,17 +73,23 @@ public final class LocationUtil {
 
     /**
      * Returns {@code true} if locations {@code a} and {@code b} are in the same
-     * world and within {@code radius} blocks of each other.
+     * world and within {@code radius} blocks of each other, measured as
+     * <b>horizontal (2D) distance only</b> (X and Z axes).
+     *
+     * <p>Y (height) is intentionally excluded so that crates stacked on different
+     * floors of a build are not blocked by the proximity check.</p>
      *
      * @param a      the first location
      * @param b      the second location
-     * @param radius the maximum allowed distance
+     * @param radius the maximum allowed horizontal distance in blocks
      * @return {@code true} if within range
      */
     public static boolean isNearby(Location a, Location b, double radius) {
         if (a.getWorld() == null || b.getWorld() == null) return false;
         if (!a.getWorld().equals(b.getWorld())) return false;
-        return a.distance(b) <= radius;
+        double dx = a.getX() - b.getX();
+        double dz = a.getZ() - b.getZ();
+        return Math.sqrt(dx * dx + dz * dz) <= radius;
     }
 
     /**

@@ -552,6 +552,22 @@ public class Crate {
     public String getIaBlock()     { return iaBlock; }
     public String getOraxenBlock() { return oraxenBlock; }
     public String getNexoBlock()   { return nexoBlock; }
+
+    /**
+     * Returns {@code true} if this crate uses an ItemsAdder furniture item
+     * (i.e. the IA item's base material is not a placeable block, such as PAPER).
+     *
+     * <p>Furniture items cannot be placed via {@code BlockPlaceEvent}; VaultCrates
+     * handles their placement by intercepting {@code PlayerInteractEvent} and
+     * tagging the ArmorStand entity that ItemsAdder spawns.</p>
+     */
+    public boolean isFurnitureCrate() {
+        if (iaBlock == null || iaBlock.isBlank()) return false;
+        VaultCrates p = VaultCrates.getInstance();
+        if (!p.getItemsAdderHook().isEnabled()) return false;
+        ItemStack item = p.getItemsAdderHook().getItem(iaBlock);
+        return item != null && !item.getType().isBlock();
+    }
     public boolean isUseEconomy()         { return useEconomy; }
     public double getEconomyPrice()       { return economyPrice; }
     public boolean isUseWeight()          { return useWeight; }

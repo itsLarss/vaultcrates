@@ -1,5 +1,5 @@
 name: VaultCrates
-version: 1.0.0
+version: 1.0.1
 main: de.itslarss.vaultcrates.VaultCrates
 api-version: "1.21"
 author: itslarss

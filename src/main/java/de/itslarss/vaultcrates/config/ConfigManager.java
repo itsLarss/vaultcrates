@@ -2,6 +2,7 @@ package de.itslarss.vaultcrates.config;
 
 import com.google.gson.*;
 import de.itslarss.vaultcrates.VaultCrates;
+import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
@@ -28,7 +29,7 @@ import java.util.logging.Level;
 public class ConfigManager {
 
     /** Increment this whenever new keys are added to the bundled config.yml. */
-    private static final int CONFIG_VERSION = 1;
+    private static final int CONFIG_VERSION = 3;
 
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
@@ -220,6 +221,19 @@ public class ConfigManager {
      * so no explicit reload is needed here.
      */
     public void reload() {
+        File configFile = new File(plugin.getDataFolder(), "config.yml");
+        YamlConfiguration test = new YamlConfiguration();
+        try {
+            test.load(configFile);
+        } catch (InvalidConfigurationException e) {
+            plugin.getLogger().severe("config.yml contains invalid YAML and could not be reloaded!");
+            plugin.getLogger().severe("Fix the error below, then run /vc reload again.");
+            plugin.getLogger().severe(e.getMessage());
+            return; // keep the last valid in-memory config — do NOT overwrite
+        } catch (IOException e) {
+            plugin.getLogger().log(Level.SEVERE, "Could not read config.yml", e);
+            return;
+        }
         plugin.reloadConfig();
         applyConfigVersioning();
     }

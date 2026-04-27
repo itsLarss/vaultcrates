@@ -13,11 +13,14 @@ public class ItemsAdderHook {
 
     private boolean enabled = false;
 
-    // Cached reflection handles
+    // Cached reflection handles — CustomStack
     private Method methodGetInstance;
     private Method methodByItemStack;
     private Method methodGetItemStack;
     private Method methodGetNamespacedID;
+
+    // Cached reflection handle — FontImages (for :icon: placeholder processing)
+    private Method methodSetAllFontImages;
 
     /**
      * Attempts to load ItemsAdder API classes via reflection.
@@ -35,6 +38,13 @@ public class ItemsAdderHook {
         } catch (Exception e) {
             enabled = false;
         }
+
+        // FontImages — optional, don't fail setup if missing
+        try {
+            Class<?> fontImagesClass = Class.forName("dev.lone.itemsadder.api.FontImages");
+            methodSetAllFontImages = fontImagesClass.getMethod("setAllFontImages", String.class);
+        } catch (Exception ignored) { /* not available in this IA version */ }
+
         return enabled;
     }
 
@@ -67,6 +77,28 @@ public class ItemsAdderHook {
             return methodByItemStack.invoke(null, item) != null;
         } catch (Exception e) {
             return false;
+        }
+    }
+
+    /**
+     * Processes IA font-image placeholders ({@code :icon_name:}) in a string,
+     * replacing them with the actual Unicode characters from the resource pack.
+     *
+     * <p>Requires ItemsAdder to be loaded and {@code FontImages.setAllFontImages}
+     * to be available (IA 2.x+). Returns the original string unchanged if IA is
+     * not enabled or the method is not available.</p>
+     *
+     * <p>Example: {@code ":heart_of_sea: &6Rank"} → {@code "\uE001 &6Rank"}</p>
+     *
+     * @param text the raw text containing optional {@code :icon:} placeholders
+     * @return the text with all known placeholders replaced
+     */
+    public String processText(String text) {
+        if (!enabled || methodSetAllFontImages == null || text == null) return text;
+        try {
+            return (String) methodSetAllFontImages.invoke(null, text);
+        } catch (Exception e) {
+            return text;
         }
     }
 

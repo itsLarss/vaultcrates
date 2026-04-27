@@ -82,16 +82,12 @@ public class ShopGui extends ChestGui {
             if (meta != null) {
                 List<net.kyori.adventure.text.Component> lore =
                         meta.lore() == null ? new ArrayList<>() : new ArrayList<>(meta.lore());
-                lore.add(net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
-                        .legacyAmpersand().deserialize(""));
-                lore.add(net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
-                        .legacyAmpersand().deserialize("&7Price: &e" + formattedPrice));
-                lore.add(net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
-                        .legacyAmpersand().deserialize("&7Your balance: &e" + formattedBalance));
+                lore.add(de.itslarss.vaultcrates.util.ColorUtil.toComponent(""));
+                lore.add(de.itslarss.vaultcrates.util.ColorUtil.toComponent("&7Price: &e" + formattedPrice));
+                lore.add(de.itslarss.vaultcrates.util.ColorUtil.toComponent("&7Your balance: &e" + formattedBalance));
                 boolean virtualMode = plugin.getConfigManager().getBoolean("Shop.VirtualKeys", true);
-                lore.add(net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
-                        .legacyAmpersand().deserialize(
-                                virtualMode ? "&aClick to buy virtual key" : "&aClick to buy key"));
+                lore.add(de.itslarss.vaultcrates.util.ColorUtil.toComponent(
+                        virtualMode ? "&aClick to buy virtual key" : "&aClick to buy key"));
                 meta.lore(lore);
                 icon.setItemMeta(meta);
             }

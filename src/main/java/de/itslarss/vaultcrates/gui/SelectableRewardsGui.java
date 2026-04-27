@@ -6,7 +6,6 @@ import de.itslarss.vaultcrates.crate.reward.Rarity;
 import de.itslarss.vaultcrates.crate.reward.Reward;
 import de.itslarss.vaultcrates.gui.base.ChestGui;
 import de.itslarss.vaultcrates.util.ColorUtil;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -108,19 +107,16 @@ public class SelectableRewardsGui extends ChestGui {
         List<net.kyori.adventure.text.Component> lore =
                 meta.lore() == null ? new ArrayList<>() : new ArrayList<>(meta.lore());
 
-        lore.add(LegacyComponentSerializer.legacyAmpersand().deserialize(""));
-        lore.add(LegacyComponentSerializer.legacyAmpersand().deserialize(
-                ColorUtil.colorize("&7Chance: &e" + String.format("%.2f%%", reward.getChance()))));
+        lore.add(ColorUtil.toComponent(""));
+        lore.add(ColorUtil.toComponent("&7Chance: &e" + String.format("%.2f%%", reward.getChance())));
 
         Rarity rarity = reward.getRarity();
         if (rarity != null) {
-            lore.add(LegacyComponentSerializer.legacyAmpersand().deserialize(
-                    ColorUtil.colorize("&7Rarity: " + rarity.getDisplayName())));
+            lore.add(ColorUtil.toComponent("&7Rarity: " + rarity.getRawDisplayName()));
         }
 
-        lore.add(LegacyComponentSerializer.legacyAmpersand().deserialize(""));
-        lore.add(LegacyComponentSerializer.legacyAmpersand().deserialize(
-                ColorUtil.colorize("&eClick to select this reward!")));
+        lore.add(ColorUtil.toComponent(""));
+        lore.add(ColorUtil.toComponent("&eClick to select this reward!"));
 
         meta.lore(lore);
         icon.setItemMeta(meta);

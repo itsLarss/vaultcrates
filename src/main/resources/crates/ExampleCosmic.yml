@@ -1,7 +1,18 @@
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-#  VaultCrates — ExampleCosmic.yml
-#  Cosmic-themed crate with a starfield animation
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ============================================================
+# VaultCrates — ExampleCosmic.yml
+# Animation: Cosmic (orbital starfield style)
+# ============================================================
+#
+# ── Supported text formats (Name, Lores, HologramLines, …) ──
+#
+#  Legacy color codes   &a &l &6 etc.
+#  Hex color            &#RRGGBB          e.g.  &#FF8800
+#  MiniMessage gradient  <gradient:#f00:#00f>Text</gradient>
+#  MiniMessage rainbow   <rainbow>Text</rainbow>
+#  IA font icons         :icon_name:       e.g.  :ui_heart:
+#
+#  Note: do NOT mix MiniMessage tags with & codes in the same line.
+# ============================================================
 
 Name: "Cosmic Crate"
 Animation: COSMIC

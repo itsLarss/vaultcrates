@@ -1,55 +1,75 @@
 # ============================================================
-# VaultCrates - Example Round Crate
-# Animation: Round
+# VaultCrates — ExampleRound.yml
+# Animation: Round (slot-machine style)
+# ============================================================
+#
+# ── Supported text formats (Name, Lores, HologramLines, …) ──
+#
+#  Legacy colour codes   &a &l &6 etc.
+#  Hex colour            &#RRGGBB          e.g.  &#FF8800
+#  MiniMessage gradient  <gradient:#f00:#00f>Text</gradient>
+#  MiniMessage rainbow   <rainbow>Text</rainbow>
+#  IA font icons         :icon_name:       e.g.  :ui_heart:
+#
+#  You may mix & codes and :icons: freely.
+#  Use MiniMessage tags only if you want gradients/rainbow —
+#  do NOT mix MiniMessage tags with & codes in the same line.
 # ============================================================
 
 Animation: Round
-AnimationVisibilityOption: "Proximity"
-Proximity_Distance: 8
 Material: ENDER_CHEST
 OnlyPlaceable: true
 Enchanted: false
 Name: '&a&lExample &2&lRound &a&lCrate'
-Size: 8
+
+# How many rewards are picked and given per open (default: 1)
+Size: 1
+
 ShiftInstantlyOpen: false
 ShiftInstantlyOpenAll: false
+
+# Show a reward-preview GUI when the player left-clicks the crate
 PreviewEnabled: true
+ShowChanceInPreview: true
 PreviewSize: 54
 PreviewTitle: "&e&lPrize Preview"
 
+# Animation visibility: ALL | Proximity
+AnimationVisibilityOption: "Proximity"
+Proximity_Distance: 8
+
+# Hologram lines shown above the crate block
 HologramLines:
   - "&a&lExample Round Crate"
   - "&7Right-click to open"
   - "&7Left-click to preview"
 
-ClosedCrateText:
-  - "&7[&aRound&7] Crate"
-  - "&7(Right-click to open)"
-  - "&7(Left-click to preview)"
-
-CommandsOnPlace: []
-
-# Chat message sent to all players when the crate is opened.
-# Leave empty [] for no message. Placeholders: {player_name} {ColoredReward:1} {ColoredReward:best}
-FinalMessage: []
-
+# Lore on the placeable crate item
 Lores:
   - "&7An example crate"
   - ""
   - "&aNormal Rewards"
-  - "&a* &f$5000"
-  - "&a* &fDiamonds"
+  - "&a* &f$5,000  &a* &fDiamonds  &a* &fTokens"
   - ""
-  - "&2Final Rewards"
-  - "&2* &fMVP Rank"
+  - "&6Final Rewards"
+  - "&6* &fMVP Rank  &6* &fBeacon Generator"
 
+# Commands run on the console when this crate block is placed
+CommandsOnPlace: []
+
+# Broadcast to all players when the crate is opened.
+# Leave empty [] for no message.
+# Placeholders: {player_name}  {ColoredReward:1}  {ColoredReward:best}
+FinalMessage: []
+
+# ── Key ────────────────────────────────────────────────────
 KeyCrate:
   Require: true
   KeysRequired: 1
-  MatchName: true
+  MatchNBT: true        # Recommended — tamper-proof NBT matching
+  MatchName: false
   MatchLore: false
   MatchEnchants: false
-  MatchNBT: true
   Material: TRIPWIRE_HOOK
   Name: "&a&lRound Crate Key"
   Enchanted: true
@@ -57,12 +77,28 @@ KeyCrate:
     - ""
     - "&7Opens a Round Crate"
 
+  # ── Shop (/vc shop) ──────────────────────────────────────
+  # Set ShopEnabled: true to list this key in the shop.
+  # Requires Vault + an economy plugin (e.g. EssentialsX).
+  # Global toggle: config.yml → Shop.Enabled
+  ShopEnabled: false
+  ShopPrice: 500.0
+
+# ── Normal Rewards ─────────────────────────────────────────
+# Chance is a relative weight — does NOT need to sum to 100.
+# Rarity IDs: common | rare | epic | legendary | jackpot | mega_jackpot
+#
+# PreviewName / PreviewLores  — optional, shown in the preview GUI.
+#   Leave PreviewLores empty ([]) to show no extra lore in the preview.
+#   Both fields support all text formats listed at the top of this file.
 Prizes:
+
   Money5000:
     Material: EMERALD
     Glow: true
     Name: '&a&l$5,000'
     Rarity: rare
+    Type: "Money"           # Shown in RewardFooter as {reward_type}
     Lores: []
     Enchantments: []
     GiveItem: false
@@ -70,9 +106,7 @@ Prizes:
       - eco give {player_name} 5000
     Chance: 25.0
     PreviewName: "&a&l$5,000"
-    PreviewLores:
-      - "&7Receive $5,000"
-      - "&7Chance: 25%"
+    PreviewLores: []
 
   Diamonds:
     Material: DIAMOND
@@ -80,37 +114,36 @@ Prizes:
     Glow: false
     Name: '&b&l16x Diamonds'
     Rarity: common
+    Type: "Item"
     Lores: []
     Enchantments: []
     GiveItem: true
     Commands: []
     Chance: 25.0
     PreviewName: "&b&l16x Diamonds"
-    PreviewLores:
-      - "&7Receive 16 Diamonds"
+    PreviewLores: []
 
   Money10000:
     Material: EMERALD
     Glow: true
     Name: '&a&l$10,000'
     Rarity: epic
+    Type: "Money"
     Lores: []
     Enchantments: []
     GiveItem: false
-    GuaranteedReward: true
     Commands:
       - eco give {player_name} 10000
     Chance: 15.0
     PreviewName: "&a&l$10,000"
-    PreviewLores:
-      - "&7Receive $10,000"
-      - "&7Chance: 15%"
+    PreviewLores: []
 
   RandomMoney:
     Material: GOLD_INGOT
     Glow: true
     Name: '&6&l$1,000 - $50,000'
     Rarity: legendary
+    Type: "Money"
     Lores: []
     Enchantments: []
     GiveItem: false
@@ -121,14 +154,14 @@ Prizes:
       - eco give {player_name} {random_number}
     Chance: 10.0
     PreviewName: "&6&l$1,000 - $50,000"
-    PreviewLores:
-      - "&7Random amount of money"
+    PreviewLores: []
 
   Tokens32:
     Material: MAGMA_CREAM
     Glow: true
     Name: '&b&l32x Tokens'
     Rarity: rare
+    Type: "Tokens"
     Lores: []
     Enchantments: []
     GiveItem: false
@@ -136,14 +169,14 @@ Prizes:
       - tokens give {player_name} 32
     Chance: 10.0
     PreviewName: "&b&l32x Tokens"
-    PreviewLores:
-      - "&7Receive 32 Tokens"
+    PreviewLores: []
 
   SellWand:
     Material: GOLDEN_HOE
     Glow: true
     Name: '&d&l1x Sell Wand'
     Rarity: epic
+    Type: "Item"
     Lores: []
     Enchantments: []
     GiveItem: false
@@ -151,14 +184,14 @@ Prizes:
       - sellwand give {player_name} 1
     Chance: 10.0
     PreviewName: "&d&l1x Sell Wand"
-    PreviewLores:
-      - "&7A powerful sell wand"
+    PreviewLores: []
 
   LegendaryKey:
     Material: TRIPWIRE_HOOK
     Glow: true
     Name: '&e&l1x Legendary Key'
     Rarity: jackpot
+    Type: "Key"
     Lores: []
     Enchantments: []
     GiveItem: false
@@ -166,15 +199,19 @@ Prizes:
       - vc key give {player_name} Legendary 1
     Chance: 5.0
     PreviewName: "&e&l1x Legendary Key"
-    PreviewLores:
-      - "&7Opens a Legendary Crate"
+    PreviewLores: []
 
+# ── Best Prizes (guaranteed bonus reward pool) ─────────────
+# One reward from this pool is ALWAYS given in addition to the
+# normal prize. Useful for ranks, rare items, etc.
 BestPrizes:
+
   MVPRank:
     Material: NETHER_STAR
     Glow: true
     Name: '&6&l1x MVP Rank'
     Rarity: mega_jackpot
+    Type: "Rank"
     Lores: []
     Enchantments: []
     GiveItem: false
@@ -183,17 +220,18 @@ BestPrizes:
     Chance: 30.0
     MessagesToPlayer: []
     BroadcastMessages: []
+    # Prevents players who already have this rank from winning it again
     BlacklistedPerms:
       - "rank.mvp"
     PreviewName: "&6&l1x MVP Rank"
-    PreviewLores:
-      - "&7The rarest reward!"
+    PreviewLores: []
 
   BeaconGen:
     Material: BEACON
     Glow: true
     Name: '&c&l1x Beacon Generator'
     Rarity: jackpot
+    Type: "Generator"
     Lores: []
     Enchantments: []
     GiveItem: false
@@ -201,8 +239,7 @@ BestPrizes:
       - generator give {player_name} beacon 1
     Chance: 35.0
     PreviewName: "&c&l1x Beacon Generator"
-    PreviewLores:
-      - "&7A powerful generator"
+    PreviewLores: []
 
   Money100k:
     Material: PLAYER_HEAD
@@ -210,6 +247,7 @@ BestPrizes:
     Glow: false
     Name: '&e&l$100,000'
     Rarity: legendary
+    Type: "Money"
     Lores: []
     Enchantments: []
     GiveItem: false
@@ -217,5 +255,4 @@ BestPrizes:
       - eco give {player_name} 100000
     Chance: 35.0
     PreviewName: "&e&l$100,000"
-    PreviewLores:
-      - "&7Receive $100,000"
+    PreviewLores: []

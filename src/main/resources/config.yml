@@ -3,7 +3,7 @@
 # VaultCrates uses it to detect outdated configs and add
 # missing keys automatically without overwriting your settings.
 # ============================================================
-_version: 1
+_version: 3
 
 # ============================================================
 # Language
@@ -41,7 +41,7 @@ Storage:
 # ============================================================
 # VaultCrates Configuration
 # Plugin by itslarss
-# Version: 1.0.0
+# Version: 1.0.1
 # ============================================================
 
 Settings:
@@ -70,8 +70,10 @@ Settings:
   # Maximum number of crate openings that can happen simultaneously on the server
   Max_Concurrent_Opens: 50
 
-  # Radius (in blocks) around a crate that triggers proximity effects
-  Crate_Radius: 10
+  # Minimum horizontal distance (in blocks) between two crates.
+  # Uses 2D distance (X/Z only) — height difference is ignored.
+  # Set to 0 to disable the check entirely.
+  Crate_Radius: 3
 
   # Radius (in blocks) around a pouch that triggers effects
   Pouch_Radius: 2
@@ -183,10 +185,27 @@ Blocked_Commands: []
 #  - "/warp"
 
 # ============================================================
+# Text Formatting
+# All text fields in this config and in crate configs support:
+#
+#   Legacy color codes   &a &6 &l &r  etc.
+#   Hex color &#RRGGBB          e.g. &#FF8800
+#   MiniMessage gradient  <gradient:#f00:#00f>Text</gradient>
+#   MiniMessage rainbow   <rainbow>Text</rainbow>
+#   IA font icons         :icon_name:       e.g. :ui_heart:
+#                         (requires ItemsAdder; icons are replaced
+#                          with the Unicode glyph from the resource pack)
+#
+#   Note: do NOT mix MiniMessage tags with & codes in the same line.
+#         Use one format per line.
+# ============================================================
+
+# ============================================================
 # Win Message
-# Sent privately to the player who opened the crate (no one else sees it).
+# Sent privately to the player who opened the crate.
 # Leave empty ("") to disable.
 # Variables: {reward_name}  {rarity}  {crate_name}  {player_name}
+# Supports all text formats listed above.
 # ============================================================
 Win_Message: "&8[&6VaultCrates&8] &7You won {reward_name} &8[{rarity}&8] &7from &e{crate_name}&7!"
 
@@ -196,8 +215,8 @@ Win_Message: "&8[&6VaultCrates&8] &7You won {reward_name} &8[{rarity}&8] &7from 
 # The rarity is cosmetic — actual drop probability is set per-reward via Chance:.
 #
 # Fields per rarity:
-#   Name:      Display name (supports & color codes)
-#   GlowColor: "R,G,B" — glow outline colour on item display entities during animations
+#   Name:      Display name (supports all text formats listed above)
+#   GlowColor: "R,G,B" — glow outline color on item display entities during animations
 #   Chance:    Display-only percentage shown in the win message via {chance}
 #
 # Built-in IDs (use these in reward Rarity: fields):
@@ -214,7 +233,7 @@ Win_Message: "&8[&6VaultCrates&8] &7You won {reward_name} &8[{rarity}&8] &7from 
 #     GlowColor: "255,85,85"
 #     Chance: 2.5
 #   divine:
-#     Name: "&d&l⚡ Divine ⚡"
+#     Name: "<gradient:#aa00ff:#ff00aa>⚡ Divine ⚡</gradient>"
 #     GlowColor: "170,0,255"
 #     Chance: 0.5
 # ============================================================
@@ -228,7 +247,7 @@ Rarities: {}
 Shop:
   # Enable the /vc shop command globally
   Enabled: true
-  # Title of the shop GUI
+  # Title of the shop GUI (supports all text formats)
   Title: "&6&lKey Shop"
   # Enable purchase confirmation screen
   Confirm_Purchase: true
@@ -239,7 +258,7 @@ Shop:
 # NPC Support
 # Link NPCs to crates via /vc linknpc <crate>
 # Supports: Citizens, ZNPCs, ZNPCsPlus, FancyNpcs
-# Mappings are stored in data/npcs.yml
+# Mappings are stored in data/npcs.json
 # ============================================================
 NPC:
   Enabled: true
@@ -252,17 +271,14 @@ NPC:
 # Placeholders:
 #   {reward_type}  — the reward's Type: value (set per reward in the crate config)
 #                    falls back to Fallback: if not set on the reward
-#   {rarity_color} — the leading color codes of the rarity name (e.g. "&6&l")
-#   {rarity_name}  — the rarity display name without color codes (e.g. "Legendär")
+#   {rarity_name}  — the rarity display name (includes color codes)
 #
-# Example result:
-#   &8Gewinntyp » &7Geld
-#   &8Seltenheit » &6&lLegendär
+# Supports all text formats (& codes, hex, MiniMessage, :ia_icons:)
 # ============================================================
 RewardFooter:
   Enabled: false
   Fallback: "Reward"   # shown when no Type: is set on the reward
   Lines:
     - ""
-    - "&8Reward Type &raquo; &7{reward_type}"
-    - "&8Rarity &raquo; {rarity_color}{rarity_name}"
+    - "&8Reward Type » &7{reward_type}"
+    - "&8Rarity » &7{rarity_name}"

@@ -3,7 +3,6 @@ package de.itslarss.vaultcrates.util;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.*;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemFlag;
@@ -47,33 +46,34 @@ public final class ItemBuilder {
     // Builder methods
     // -------------------------------------------------------------------------
 
-    /** Sets the display name (translates & colour codes). */
+    /**
+     * Sets the display name.
+     * Supports legacy {@code &} codes, {@code &#RRGGBB} hex, MiniMessage tags
+     * ({@code <gradient:...>}), and ItemsAdder {@code :icon:} placeholders.
+     * Italic is explicitly disabled to override Minecraft's default item style.
+     */
     public ItemBuilder name(String name) {
         if (name == null || name.isEmpty()) return this;
-        meta.displayName(LegacyComponentSerializer.legacyAmpersand()
-                .deserialize(ColorUtil.colorize(name)));
+        meta.displayName(ColorUtil.toComponent(name));
         return this;
     }
 
-    /** Sets the lore lines (translates & colour codes on each line). */
+    /**
+     * Sets the lore lines.
+     * Each line supports legacy {@code &} codes, hex, MiniMessage, and IA icons.
+     * Italic is explicitly disabled on every line.
+     */
     public ItemBuilder lore(List<String> lore) {
         if (lore == null || lore.isEmpty()) return this;
-        List<Component> components = lore.stream()
-                .map(l -> LegacyComponentSerializer.legacyAmpersand()
-                        .deserialize(ColorUtil.colorize(l)))
-                .collect(Collectors.toList());
-        meta.lore(components);
+        meta.lore(ColorUtil.toComponents(lore));
         return this;
     }
 
-    /** Appends additional lore lines. */
+    /** Appends additional lore lines with the same rich-text support. */
     public ItemBuilder addLore(String... lines) {
         if (lines == null) return this;
         List<Component> existing = meta.lore() == null ? new ArrayList<>() : new ArrayList<>(meta.lore());
-        for (String line : lines) {
-            existing.add(LegacyComponentSerializer.legacyAmpersand()
-                    .deserialize(ColorUtil.colorize(line)));
-        }
+        for (String line : lines) existing.add(ColorUtil.toComponent(line));
         meta.lore(existing);
         return this;
     }

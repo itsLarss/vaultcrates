@@ -1,10 +1,12 @@
 package de.itslarss.vaultcrates.crate.reward;
 
 import de.itslarss.vaultcrates.VaultCrates;
+import de.itslarss.vaultcrates.hook.ItemsAdderHook;
 import de.itslarss.vaultcrates.util.ColorUtil;
 import de.itslarss.vaultcrates.util.ItemBuilder;
 import de.itslarss.vaultcrates.util.NumberUtil;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -82,7 +84,7 @@ public class Reward {
         this.enchantCommands = new ArrayList<>();
         this.amount = 1;
         this.material = Material.STONE;
-        this.rarityId = "gewohnlich";
+        this.rarityId = "common";
         this.bundledItems = new ArrayList<>();
     }
 
@@ -108,7 +110,8 @@ public class Reward {
 
         // Material — supports standard Bukkit materials and ItemsAdder "namespace:id" format
         String matStr = section.getString("Material", "STONE");
-        if (matStr.contains(":") && VaultCrates.getInstance().getItemsAdderHook().isEnabled()) {
+        ItemsAdderHook iaHook = VaultCrates.getInstance().getItemsAdderHook();
+        if (matStr.contains(":") && iaHook != null && iaHook.isEnabled()) {
             // Looks like an ItemsAdder namespaced id
             r.iaItemId = matStr;
             r.material = Material.PAPER; // invisible fallback for display
@@ -135,7 +138,7 @@ public class Reward {
         r.weight = section.getDouble("Weight", 0.0);
         r.globalLimit = section.getInt("GlobalLimit", 0);
         r.playerLimit = section.getInt("PlayerLimit", 0);
-        r.rarityId       = section.getString("Rarity", "gewohnlich");
+        r.rarityId       = section.getString("Rarity", "common");
         r.rewardType     = section.getString("Type",   null); // null = use configured fallback
         r.enchantCommands = section.getStringList("EnchantCommands");
 
@@ -214,13 +217,13 @@ public class Reward {
         // Oraxen custom item
         if (oraxenItemId != null && plugin.getOraxenHook().isEnabled()) {
             ItemStack item = plugin.getOraxenHook().getItem(oraxenItemId);
-            if (item != null) { item = item.clone(); item.setAmount(Math.max(1, amount)); return item; }
+            if (item != null) { return applyRewardMeta(item.clone()); }
         }
 
         // Nexo custom item
         if (nexoItemId != null && plugin.getNexoHook().isEnabled()) {
             ItemStack item = plugin.getNexoHook().getItem(nexoItemId);
-            if (item != null) { item = item.clone(); item.setAmount(Math.max(1, amount)); return item; }
+            if (item != null) { return applyRewardMeta(item.clone()); }
         }
 
         // ExecutableItems custom item — getItem(id, player): pass null for no player context
@@ -238,14 +241,10 @@ public class Reward {
             if (item != null) { item = item.clone(); item.setAmount(Math.max(1, amount)); return item; }
         }
 
-        // ItemsAdder custom item
+        // ItemsAdder custom item — apply reward Name / Lore / Glow on top of the IA base item
         if (iaItemId != null && plugin.getItemsAdderHook().isEnabled()) {
             ItemStack iaItem = plugin.getItemsAdderHook().getItem(iaItemId);
-            if (iaItem != null) {
-                ItemStack copy = iaItem.clone();
-                copy.setAmount(Math.max(1, amount));
-                return copy;
-            }
+            if (iaItem != null) { return applyRewardMeta(iaItem.clone()); }
         }
 
         // Standard Bukkit item
@@ -278,6 +277,44 @@ public class Reward {
      *   <li>{@code {rarity_name}} — the rarity display name without leading color codes</li>
      * </ul>
      */
+    /**
+     * Applies this reward's {@code Name}, {@code Lores}, {@code Amount} and {@code Glow}
+     * to a custom-plugin item (ItemsAdder, Oraxen, Nexo) that already has its own
+     * model/texture data set.  The item is modified in place and returned.
+     *
+     * <p>MMOItems and ExecutableItems are intentionally excluded — those items carry
+     * intrinsic stat lore that must not be overwritten.</p>
+     */
+    private ItemStack applyRewardMeta(ItemStack item) {
+        item.setAmount(Math.max(1, amount));
+        ItemMeta meta = item.getItemMeta();
+        if (meta == null) { appendFooter(item); return item; }
+
+        // Display name — supports &codes, &#RRGGBB hex, MiniMessage, :ia_icon:
+        if (name != null && !name.isEmpty()) {
+            meta.displayName(de.itslarss.vaultcrates.util.ColorUtil.toComponent(name));
+        }
+
+        // Lore — same rich-text support per line
+        if (lores != null && !lores.isEmpty()) {
+            meta.lore(de.itslarss.vaultcrates.util.ColorUtil.toComponents(lores));
+        }
+
+        // Glow
+        if (glow) {
+            org.bukkit.enchantments.Enchantment infinity =
+                    org.bukkit.Registry.ENCHANTMENT.get(org.bukkit.NamespacedKey.minecraft("infinity"));
+            if (infinity != null) {
+                meta.addEnchant(infinity, 1, true);
+                meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);
+            }
+        }
+
+        item.setItemMeta(meta);
+        appendFooter(item);
+        return item;
+    }
+
     private void appendFooter(ItemStack item) {
         VaultCrates plugin = VaultCrates.getInstance();
         if (!plugin.getConfigManager().getBoolean("RewardFooter.Enabled", false)) return;
@@ -285,11 +322,9 @@ public class Reward {
         List<String> lines = plugin.getConfigManager().getStringList("RewardFooter.Lines");
         if (lines.isEmpty()) return;
 
-        Rarity rarity     = getRarity();
-        String colorPrefix = rarity.getColorPrefix();
-        String plainName   = rarity.getPlainName();
-        String fallback    = plugin.getConfigManager().getString("RewardFooter.Fallback", "Reward");
-        String type        = (rewardType != null && !rewardType.isBlank()) ? rewardType : fallback;
+        Rarity rarity  = getRarity();
+        String fallback = plugin.getConfigManager().getString("RewardFooter.Fallback", "Reward");
+        String type     = (rewardType != null && !rewardType.isBlank()) ? rewardType : fallback;
 
         ItemMeta meta = item.getItemMeta();
         if (meta == null) return;
@@ -297,11 +332,9 @@ public class Reward {
         List<Component> lore = meta.lore() == null ? new ArrayList<>() : new ArrayList<>(meta.lore());
         for (String line : lines) {
             String resolved = line
-                    .replace("{reward_type}",  type)
-                    .replace("{rarity_color}", colorPrefix)
-                    .replace("{rarity_name}",  plainName);
-            lore.add(LegacyComponentSerializer.legacyAmpersand()
-                    .deserialize(ColorUtil.colorize(resolved)));
+                    .replace("{reward_type}", type)
+                    .replace("{rarity_name}", rarity.getDisplayName());
+            lore.add(ColorUtil.toComponent(resolved));
         }
         meta.lore(lore);
         item.setItemMeta(meta);

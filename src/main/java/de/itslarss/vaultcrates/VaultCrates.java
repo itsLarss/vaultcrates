@@ -86,33 +86,34 @@ public final class VaultCrates extends JavaPlugin {
         // Load rarity registry (after config, before crates so rewards can resolve rarities)
         de.itslarss.vaultcrates.crate.reward.Rarity.loadFromConfig();
 
-        // 2. Storage + Keys
+        // 2. Hooks — must be set up before crates so Reward.fromConfig() can
+        //    call getItemsAdderHook().isEnabled() without a NullPointerException
+        setupHooks();
+
+        // 3. Storage + Keys
         storageManager = new StorageManager(this);
         storageManager.loadAll();
 
         keyManager = new KeyManager(this);
         keyManager.load();
 
-        // 3. Crates & Pouches
+        // 4. Crates & Pouches
         crateManager = new CrateManager(this);
         crateManager.reload();
 
         pouchManager = new PouchManager(this);
         pouchManager.reload();
 
-        // 4. Holograms — delay by 1 tick so TextDisplay entities are spawned
+        // 5. Holograms — delay by 1 tick so TextDisplay entities are spawned
         //    after the server tick has started (avoids issues on startup)
         hologramManager = new HologramManager(this);
         getServer().getScheduler().runTask(this, () -> hologramManager.reloadAll());
 
-        // 5. Animations
+        // 6. Animations
         animationManager = new AnimationManager(this);
 
-        // 6. GUI
+        // 7. GUI
         guiManager = new GuiManager(this);
-
-        // 7. Hooks
-        setupHooks();
 
         // 8. Listeners
         registerListeners();
@@ -219,7 +220,12 @@ public final class VaultCrates extends JavaPlugin {
 
         // ItemsAdder
         itemsAdderHook = new ItemsAdderHook();
-        if (itemsAdderHook.setup()) getLogger().info("Hooked into ItemsAdder.");
+        if (itemsAdderHook.setup()) {
+            getLogger().info("Hooked into ItemsAdder.");
+            // Register the IA font-icon text preprocessor so :icon: placeholders
+            // in reward names, lore lines, holograms etc. are resolved automatically.
+            de.itslarss.vaultcrates.util.ColorUtil.setTextPreprocessor(itemsAdderHook::processText);
+        }
 
         // Oraxen
         oraxenHook = new OraxenHook();
