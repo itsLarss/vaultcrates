@@ -41,7 +41,7 @@ Storage:
 # ============================================================
 # VaultCrates Configuration
 # Plugin by itslarss
-# Version: 1.0.1
+# Version: ${plugin.version}
 # ============================================================
 
 Settings:

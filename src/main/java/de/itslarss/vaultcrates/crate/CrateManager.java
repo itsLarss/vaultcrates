@@ -237,10 +237,15 @@ public class CrateManager {
      * Indexes a single furniture entity that became loaded (e.g. on chunk load).
      * Called by {@code CrateListener}'s {@code ChunkLoadEvent} handler.
      *
+     * <p>Handles all entity types ItemsAdder may use for furniture:
+     * {@link ArmorStand}, {@link org.bukkit.entity.Display} sub-types,
+     * and {@link org.bukkit.entity.Interaction}.</p>
+     *
      * @param entity the entity to check
      */
     public void indexEntityIfCrate(Entity entity) {
-        if (!(entity instanceof ArmorStand)) return;
+        // Ignore players and general mobs — only furniture entity types
+        if (!isFurnitureEntityType(entity)) return;
         NamespacedKey crateKey = new NamespacedKey(plugin, PDC_CRATE_NAME);
         if (!entity.getPersistentDataContainer().has(crateKey, PersistentDataType.STRING)) return;
 
@@ -252,6 +257,18 @@ public class CrateManager {
                 return;
             }
         }
+    }
+
+    /**
+     * Returns {@code true} if the given entity is a type that ItemsAdder (or similar
+     * furniture plugins) may use to represent a placed furniture item:
+     * {@link ArmorStand}, any {@link org.bukkit.entity.Display} sub-type
+     * (ItemDisplay, BlockDisplay, TextDisplay), or {@link org.bukkit.entity.Interaction}.
+     */
+    private static boolean isFurnitureEntityType(Entity entity) {
+        return entity instanceof ArmorStand
+                || entity instanceof org.bukkit.entity.Display
+                || entity instanceof org.bukkit.entity.Interaction;
     }
 
     // -------------------------------------------------------------------------
@@ -335,6 +352,20 @@ public class CrateManager {
         if (placementId == null) return null;
         CrateLocation cl = crateLocations.get(placementId);
         return cl == null ? null : getCrate(cl.getCrateName());
+    }
+
+    /**
+     * Returns the UUID under which this entity's crate is registered — the entity
+     * itself, or (for multi-entity IA furniture such as an Interaction hitbox)
+     * the furniture's base entity. {@code null} if it is not a crate.
+     */
+    @Nullable
+    public UUID resolveCrateEntityId(Entity entity) {
+        if (entityIndex.containsKey(entity.getUniqueId())) return entity.getUniqueId();
+        var ia = plugin.getItemsAdderHook();
+        Entity base = ia != null ? ia.getFurnitureBaseEntity(entity) : null;
+        if (base != null && entityIndex.containsKey(base.getUniqueId())) return base.getUniqueId();
+        return null;
     }
 
     /**
@@ -424,16 +455,22 @@ public class CrateManager {
         Location target = pending.targetLocation();
         NamespacedKey crateKey = new NamespacedKey(plugin, PDC_CRATE_NAME);
 
-        // Search for a nearby ArmorStand that is NOT already registered as a crate
+        // Search for a nearby furniture entity that is NOT already registered as a crate.
+        // Covers all entity types IA may use: ArmorStand, ItemDisplay, BlockDisplay,
+        // TextDisplay, Interaction.
         Optional<Entity> found = target.getWorld()
                 .getNearbyEntities(target.clone().add(0.5, 0.5, 0.5), 2.0, 2.0, 2.0).stream()
-                .filter(e -> e instanceof ArmorStand)
+                .filter(CrateManager::isFurnitureEntityType)
                 .filter(e -> !e.getPersistentDataContainer().has(crateKey, PersistentDataType.STRING))
                 .min(Comparator.comparingDouble(e -> e.getLocation().distanceSquared(target)));
 
         if (found.isEmpty()) return null;
 
+        // Register the furniture's base entity, not whichever part happened to be nearest
         Entity entity = found.get();
+        var ia = plugin.getItemsAdderHook();
+        Entity base = ia != null ? ia.getFurnitureBaseEntity(entity) : null;
+        if (base != null) entity = base;
         String id = setCrateAtEntity(entity, crate, entity.getLocation());
 
         // Spawn hologram above the entity

@@ -44,6 +44,7 @@ public final class VaultCrates extends JavaPlugin {
     private HologramManager hologramManager;
     private AnimationManager animationManager;
     private GuiManager guiManager;
+    private CrateListener crateListener;
 
     // Update checker
     private UpdateChecker updateChecker;
@@ -266,7 +267,10 @@ public final class VaultCrates extends JavaPlugin {
 
     private void registerListeners() {
         var pm = getServer().getPluginManager();
-        pm.registerEvents(new CrateListener(this), this);
+        crateListener = new CrateListener(this);
+        pm.registerEvents(crateListener, this);
+        itemsAdderHook.registerFurnitureGuard(this,
+                e -> crateManager.resolveCrateEntityId(e) != null);
         pm.registerEvents(new PouchListener(this), this);
         pm.registerEvents(new PlayerListener(this), this);
         pm.registerEvents(new GuiListener(this), this);
@@ -322,6 +326,7 @@ public final class VaultCrates extends JavaPlugin {
     public HologramManager getHologramManager()     { return hologramManager; }
     public AnimationManager getAnimationManager()   { return animationManager; }
     public GuiManager getGuiManager()               { return guiManager; }
+    public CrateListener getCrateListener()         { return crateListener; }
 
     // -------------------------------------------------------------------------
     // Hook accessors

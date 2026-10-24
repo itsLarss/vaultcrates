@@ -8,7 +8,8 @@ import org.bukkit.Bukkit;
 
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.net.URL;
+import java.net.URI;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.logging.Level;
 
@@ -27,7 +28,7 @@ import java.util.logging.Level;
 public class UpdateChecker {
 
     private static final String MODRINTH_API =
-            "https://api.modrinth.com/v2/project/vaultcrates/version?loaders=[\"paper\"]";
+            "https://api.modrinth.com/v2/project/vaultcrates/version";
     private static final String MODRINTH_URL =
             "https://modrinth.com/plugin/vaultcrates";
 
@@ -66,7 +67,12 @@ public class UpdateChecker {
 
     private void check() {
         try {
-            HttpURLConnection conn = (HttpURLConnection) new URL(MODRINTH_API).openConnection();
+            // Only ask for builds made for this server's MC version — each VaultCrates
+            // jar targets one 26.x line, so a 26.3 build is no "update" for a 26.1 server.
+            String query = "?loaders=" + encode("[\"paper\"]")
+                    + "&game_versions=" + encode("[\"" + Bukkit.getMinecraftVersion() + "\"]");
+            HttpURLConnection conn = (HttpURLConnection)
+                    URI.create(MODRINTH_API + query).toURL().openConnection();
             conn.setRequestMethod("GET");
             conn.setConnectTimeout(5_000);
             conn.setReadTimeout(5_000);
@@ -130,7 +136,10 @@ public class UpdateChecker {
     }
 
     private static int[] semver(String v) {
-        String[] parts = v.split("[.\\-]");
+        // "1.1.0-26.1.x" → "1.1.0": the suffix is the MC target, not part of the plugin version
+        int dash = v.indexOf('-');
+        if (dash >= 0) v = v.substring(0, dash);
+        String[] parts = v.split("\\.");
         int[] nums = new int[parts.length];
         for (int i = 0; i < parts.length; i++) {
             String digits = parts[i].replaceAll("[^0-9]", "");
@@ -158,6 +167,10 @@ public class UpdateChecker {
     // -------------------------------------------------------------------------
     // Helpers
     // -------------------------------------------------------------------------
+
+    private static String encode(String s) {
+        return URLEncoder.encode(s, StandardCharsets.UTF_8);
+    }
 
     private static String pad(String s, int n) {
         return String.format("%-" + n + "s", s);

@@ -1,41 +1,38 @@
-<div align="center">
-
-<img src="logo.png" alt="VaultCrates Logo" width="128"/>
+![VaultCrates](https://raw.githubusercontent.com/itsLarss/vaultcrates/main/logo.png)
 
 # VaultCrates
 
-**A feature-rich, fully animated crate plugin for Paper 1.21.x**
+**A feature-rich, fully animated crate plugin for Paper 26.x**
 
 No NMS · No legacy libraries · No external hologram plugin required
 
-[![Paper](https://img.shields.io/badge/Paper-1.21.x-F96854?style=flat-square&logo=data:image/png;base64,iVBORw0KGgo=)](https://papermc.io)
-[![Java](https://img.shields.io/badge/Java-21+-007396?style=flat-square&logo=openjdk)](https://adoptium.net)
+[![Paper](https://img.shields.io/badge/Paper-26.1%20%E2%80%93%2026.3-F96854?style=flat-square)](https://papermc.io)
+[![Java](https://img.shields.io/badge/Java-25+-007396?style=flat-square&logo=openjdk)](https://adoptium.net)
 [![Modrinth](https://img.shields.io/modrinth/dt/vaultcrates?style=flat-square&logo=modrinth&color=00AF5C)](https://modrinth.com/plugin/vaultcrates)
-[![License](https://img.shields.io/badge/License-All%20Rights%20Reserved-red?style=flat-square)](#-license)
-
-</div>
+[![License](https://img.shields.io/badge/License-GPL--3.0-blue?style=flat-square)](https://github.com/itsLarss/vaultcrates/blob/main/LICENSE)
 
 ---
 
 ## ✨ Features
 
 - **12 unique animations** — particles, sounds and visual effects for every style
-- **Physical & Virtual Keys** — NBT-tagged items with anti-dupe UUID tracking; virtual keys stored per-player in the database
+- **Physical & Virtual Keys** — NBT-tagged items with anti-dupe UUID tracking; virtual keys stored per player in the database
 - **Pity system** — configurable guaranteed drop after N opens per rarity
 - **Reward limits** — global and per-player caps per reward
-- **Virtual key shop** — players buy keys with in-game money via `/vc shop` (requires Vault)
+- **Virtual key shop** — players buy keys with in-game money via `/vc shop` (requires Vault or VaultUnlocked)
 - **Pouches** — right-clickable reward bags with configurable random number ranges
 - **Holograms** — floating Text Display entities, no external plugin needed; persist across restarts
-- **Placement ID system** — every placed crate gets a unique ID; remove via `/vc remove <id>`
+- **Placement ID system** — every placed crate gets a unique ID; remove it with `/vc remove <id>`
+- **Furniture crates** — use ItemsAdder furniture as a crate, including multi-entity furniture (display + hitbox)
 - **In-game GUI editor** — edit crates and keys without touching a YAML file
-- **Reward preview** — paginated GUI with normalised drop percentages; toggle-able per crate
+- **Reward preview** — paginated GUI with normalised drop percentages; toggleable per crate
 - **Best Prizes** — guaranteed bonus reward rolled from a separate pool
 - **Bundled items** — give multiple bonus items alongside the main reward
 - **Selectable rewards** — players pick their prize from N random options
 - **Milestones** — bonus rewards after X total crate opens
-- **Reward footer** — auto-appended lore lines showing reward type and rarity (configurable template)
-- **NPC support** — Citizens, ZNPCs, ZNPCsPlus, FancyNpcs, or any entity via `/vc linknpc`
-- **Multi-language** — English, German, French, Spanish built-in; add any language by dropping a `messages_<code>.yml` file
+- **Reward footer** — auto-appended lore lines showing reward type and rarity
+- **NPC support** — Citizens, FancyNpcs, ZNPCsPlus, ZNPCs, or any entity via `/vc linknpc`
+- **Multi-language** — English, German, French, Spanish built in; add any language with a `messages_<code>.yml` file
 - **Multi-database** — JSON (default), SQLite or MySQL with automatic table creation
 - **Developer API** — custom events, programmatic crate opening, key management
 
@@ -45,33 +42,45 @@ No NMS · No legacy libraries · No external hologram plugin required
 
 | | |
 |---|---|
-| Server | **Paper** (or forks) 1.21 – 1.21.4+ |
-| Java | **21+** |
+| Server | **Paper** (or forks) 26.1.x, 26.2 or 26.3 |
+| Java | **25+** |
+
+### Which jar do I need?
+
+| Your server | Download |
+|---|---|
+| 26.1 – 26.1.x | `VaultCrates-1.1.0-26.1.x.jar` |
+| 26.2.x | `VaultCrates-1.1.1-26.2.jar` |
+| 26.3.x | `VaultCrates-1.1.2-26.3.jar` |
+
+Each jar refuses to load on a Minecraft version older than the one it was built for.
+For Minecraft 1.21.x, use VaultCrates **1.0.1**.
 
 ### Optional soft-dependencies
 
-| Plugin | Purpose |
-|---|---|
-| [Vault](https://www.spigotmc.org/resources/vault.34315/) + economy plugin | Key shop, economy prices in reward commands |
-| [PlaceholderAPI](https://www.spigotmc.org/resources/placeholderapi.6245/) | Placeholders in messages & hologram lines |
-| [ItemsAdder](https://www.spigotmc.org/resources/itemsadder.73355/) | Custom block & item models |
-| [Oraxen](https://www.spigotmc.org/resources/oraxen.72448/) | Custom block & item models |
-| [Nexo](https://www.spigotmc.org/resources/nexo.112733/) | Custom block & item models |
-| [ExecutableItems](https://www.spigotmc.org/resources/custom-items-textures-executable-items.77578/) | Custom items as rewards |
-| [MMOItems](https://www.spigotmc.org/resources/mmoitems-premium.39267/) | Custom items as rewards |
-| [Citizens](https://www.spigotmc.org/resources/citizens.13811/) | NPC-to-crate linking |
-| [ZNPCs](https://www.spigotmc.org/resources/znpcs.80940/) / [ZNPCsPlus](https://hangar.papermc.io/Pyrbu/ZNPCsPlus) | NPC-to-crate linking |
-| [FancyNpcs](https://www.spigotmc.org/resources/fancynpcs.111694/) | NPC-to-crate linking |
+| Plugin | Tested API version | Purpose |
+|---|---|---|
+| [Vault](https://www.spigotmc.org/resources/vault.34315/) / [VaultUnlocked](https://modrinth.com/plugin/vaultunlocked) + economy plugin | VaultUnlocked 2.20 | Key shop, economy-priced crates |
+| [PlaceholderAPI](https://modrinth.com/plugin/placeholderapi) | 2.12.3 | Placeholders in messages & holograms |
+| [ItemsAdder](https://www.spigotmc.org/resources/itemsadder.73355/) | 4.0.18 | Custom items, crate blocks & furniture, `:icon:` font images |
+| [Oraxen](https://www.spigotmc.org/resources/oraxen.72448/) | 1.220 | Custom block & item models |
+| [Nexo](https://www.spigotmc.org/resources/nexo.112733/) | 1.29 | Custom block & item models |
+| [ExecutableItems](https://www.spigotmc.org/resources/custom-items-textures-executable-items.77578/) | SCore 5.25 | Custom items as rewards |
+| [MMOItems](https://www.spigotmc.org/resources/mmoitems-premium.39267/) | 6.10 | Custom items as rewards |
+| [Citizens](https://www.spigotmc.org/resources/citizens.13811/) | 2.0.44 | NPC-to-crate linking |
+| [FancyNpcs](https://modrinth.com/plugin/fancynpcs) | 2.11 | NPC-to-crate linking |
+| [ZNPCsPlus](https://modrinth.com/plugin/znpcsplus) | 2.0 | NPC-to-crate linking |
+| [ZNPCs](https://www.spigotmc.org/resources/znpcs.80940/) | legacy | NPC-to-crate linking |
 
-> All soft-dependencies are loaded via **reflection** — VaultCrates compiles and runs without any of them installed.
+> All soft-dependencies are loaded via **reflection** — VaultCrates runs without any of them installed.
 
 ---
 
 ## 🚀 Installation
 
-1. Drop `VaultCrates.jar` into your `plugins/` folder
+1. Pick the jar for your Minecraft version (see table above) and drop it into `plugins/`
 2. Start or restart the server — example configs are generated automatically
-3. Get a placeable crate block: `/vc getcrate ExampleRound`
+3. Get a placeable crate: `/vc getcrate ExampleRound`
 4. Place it anywhere — the hologram appears and the placement is saved automatically
 5. Give yourself a key: `/vc key give <name> ExampleRound 1`
 6. Right-click the crate to open it
@@ -86,7 +95,7 @@ All commands use `/vc` (aliases: `/vaultcrates`, `/crate`).
 
 | Command | Permission | Description |
 |---|---|---|
-| `/vc getcrate <crate>` | `vaultcrates.admin` | Get the placeable crate block item |
+| `/vc getcrate <crate>` | `vaultcrates.admin` | Get the placeable crate item |
 | `/vc create <name>` | `vaultcrates.admin` | Create a new crate config in-game |
 | `/vc list` | `vaultcrates.admin` | List all loaded crates |
 | `/vc errors` | `vaultcrates.admin` | Show config load errors |
@@ -99,10 +108,11 @@ All commands use `/vc` (aliases: `/vaultcrates`, `/crate`).
 | Command | Permission | Description |
 |---|---|---|
 | `/vc placements` | `vaultcrates.admin` | List all placed instances with IDs and coordinates |
-| `/vc remove <id>` | `vaultcrates.admin` | Remove a placed crate instance by its ID |
+| `/vc remove <id>` | `vaultcrates.admin` | Remove a placed crate by its ID |
 
-> **Tip:** **Shift+Left-Click** a crate block to break and remove it (requires `vaultcrates.admin`).
-> The unique placement ID is shown in chat when placing a crate — note it for later removal.
+> **Tip:** The placement ID is shown in chat when you place a crate.
+> **Block crates:** Shift + left-click breaks and removes the block (requires `vaultcrates.admin`).
+> **Furniture crates:** Shift + left-click only shows the ID — remove them with `/vc remove <id>`, so nobody deletes a crate by accident.
 
 ### Physical keys (items)
 
@@ -137,7 +147,13 @@ All commands use `/vc` (aliases: `/vaultcrates`, `/crate`).
 
 | Command | Permission | Description |
 |---|---|---|
-| `/vc linknpc <crate>` | `vaultcrates.linknpc` | Link the nearest entity/NPC to a crate |
+| `/vc linknpc <crate>` | `vaultcrates.linknpc` | Link the nearest entity or Citizens NPC (stand within 3 blocks) |
+| `/vc linknpc <crate> fancynpcs <name>` | `vaultcrates.linknpc` | Link a FancyNpcs NPC by its name |
+| `/vc linknpc <crate> znpcsplus <id>` | `vaultcrates.linknpc` | Link a ZNPCsPlus NPC by its id |
+| `/vc linknpc <crate> znpcs <name>` | `vaultcrates.linknpc` | Link a ZNPCs NPC by its name |
+
+FancyNpcs and ZNPCsPlus NPCs are packet-based and have no real entity, so they are linked by name/id.
+Opening a crate through an NPC requires a key, just like the crate itself.
 
 ---
 
@@ -173,7 +189,7 @@ Settings:
   Cant_Open_Creative: false
   Must_Hold_Key_In_Hand: false
   Cant_Drop_Key: false
-  Blocked_Commands: []  # Commands blocked while an animation is running
+  Crate_Radius: 3     # Min. distance between two crates, 0 = off
 
 Keys:
   Virtual_Keys_Enabled: true
@@ -183,21 +199,23 @@ Shop:
   Enabled: true
   VirtualKeys: true   # true = virtual keys; false = physical key items
 
-Win_Message: "&8[&6VaultCrates&8] &7You won {reward_name} [{rarity}] from &e{crate_name}&7!"
+Win_Message: "&8[&6VaultCrates&8] &7You won {reward_name} &8[{rarity}&8] &7from &e{crate_name}&7!"
 
 RewardFooter:         # Extra lore lines appended to every reward item
   Enabled: false
+  Fallback: "Reward"
   Lines:
     - ""
     - "&8Reward Type » &7{reward_type}"
-    - "&8Rarity » {rarity_color}{rarity_name}"
+    - "&8Rarity » &7{rarity_name}"
 ```
 
 ### Crate config (`crates/MyCrate.yml`)
 
 ```yaml
 Animation: ROUND          # See animations list
-Block: ENDER_CHEST
+Material: ENDER_CHEST
+IAModel: "namespace:my_crate"   # Optional — ItemsAdder block or furniture
 Size: 1                   # Rewards given per open
 PreviewEnabled: true
 ShowChanceInPreview: true
@@ -219,15 +237,18 @@ FinalMessage: []          # Broadcast to all players on open (leave empty to dis
 Prizes:
   diamond:
     Name: "&b&lDiamond"
-    Rarity: epic           # common | rare | epic | legendary | jackpot | mega_jackpot
+    Rarity: epic           # common | rare | epic | legendary | jackpot | mega_jackpot | custom
     Chance: 10.0           # Relative weight — does not need to sum to 100
     Material: DIAMOND
     Amount: 1
-    Glow: true
+    Glow: true             # Visual glint only — the item can still be enchanted normally
     GiveItem: true
     Type: "Item"           # Optional — shown in RewardFooter as {reward_type}
+    Enchantments:
+      sharpness: 5
+      "myplugin:soulbound": 1   # Enchantments from enchant plugins via namespaced id
     Commands: []
-    EnchantCommands: []    # Run after item is given (for custom enchant plugins)
+    EnchantCommands: []    # Run after the item is given (for enchant plugins without registry enchants)
     MessagesToPlayer: []
     BroadcastMessages: []
     GlobalLimit: 0         # 0 = unlimited
@@ -245,12 +266,12 @@ BestPrizes:
 
 | ID | Display | Glow colour |
 |---|---|---|
-| `common` | &7Common | Gray |
-| `rare` | &aRare | Green |
-| `epic` | &5Epic | Purple |
-| `legendary` | &6&lLegendary | Gold |
-| `jackpot` | &c&lJackpot | Red |
-| `mega_jackpot` | &4&l✦ Mega Jackpot ✦ | Dark red |
+| `common` | Common | Gray |
+| `rare` | Rare | Green |
+| `epic` | Epic | Purple |
+| `legendary` | **Legendary** | Gold |
+| `jackpot` | **Jackpot** | Red |
+| `mega_jackpot` | **✦ Mega Jackpot ✦** | Dark red |
 
 Custom rarities can be added in `config.yml` under `Rarities:` with optional pity thresholds, glow colours and broadcast messages.
 
@@ -295,7 +316,7 @@ Four languages are bundled out of the box:
 | Type | Notes |
 |---|---|
 | `JSON` | Default. Zero setup. All data in `data/`. |
-| `SQLITE` | File-based SQL. Bundled driver — no extra JAR needed. |
+| `SQLITE` | File-based SQL. Bundled driver — no extra jar needed. |
 | `MYSQL` | Full MySQL / MariaDB support. Tables created automatically. |
 
 Data stored: virtual keys, pity counters, reward limits, milestone progress, used key UUIDs.
@@ -312,7 +333,7 @@ Data stored: virtual keys, pity counters, reward limits, milestone progress, use
 | `COSMIC` | Orbital — double counter-rotating rings with bobbing centre item |
 | `DISPLAY` | Single item cycles through prizes and lands on the winner |
 | `PYRAMID` | Three-tiered pyramid of rotating items |
-| `CONTRABAND` | Items float upward and vanish one-by-one |
+| `CONTRABAND` | Items float upward and vanish one by one |
 | `INSTANT` | No animation — particle burst, reward given immediately |
 | `AIR_STRIKE` | Items fall from height with lightning strikes |
 | `BREAKOUT` | Items burst outward and arc back |
@@ -324,13 +345,20 @@ Data stored: virtual keys, pity counters, reward limits, milestone progress, use
 ## 🎨 Custom item support
 
 ```yaml
-# In a reward, crate block, or key:
-OraxenModel:  "namespace:item_id"
-NexoModel:    "namespace:item_id"
-IAModel:      "namespace:item_id"   # ItemsAdder
+# In a reward:
+Material:     "namespace:item_id"   # ItemsAdder item
+OraxenModel:  "item_id"
+NexoModel:    "item_id"
 EIModel:      "my_item_id"          # ExecutableItems
 MMOItem:      "TYPE:item_id"        # e.g. SWORD:my_sword
+
+# On a crate or key:
+IAModel:      "namespace:item_id"
+OraxenModel:  "item_id"
+NexoModel:    "item_id"
 ```
+
+ItemsAdder font images (`:icon_name:`) work in every text field: names, lore, holograms and messages.
 
 ---
 
@@ -373,12 +401,24 @@ public void onCrateOpened(CrateOpenedEvent e) {
 
 ---
 
-## 📄 License
+## 🛠️ Building from source
 
-All rights reserved. Do not redistribute or resell without explicit permission from the author.
+Requires JDK 25 and Maven.
+
+```bash
+mvn package -P mc-26.1   # → target/VaultCrates-1.1.0-26.1.x.jar
+mvn package -P mc-26.2   # → target/VaultCrates-1.1.1-26.2.jar
+mvn package -P mc-26.3   # → target/VaultCrates-1.1.2-26.3.jar
+```
 
 ---
 
-<div align="center">
-Made with ❤️ by <strong>itslarss</strong>
-</div>
+## 📄 License
+
+VaultCrates is free software licensed under the **GNU General Public License v3.0**.
+You may use, modify and redistribute it under the terms of the GPL-3.0 — modified versions must stay open source under the same license.
+See [LICENSE](https://github.com/itsLarss/vaultcrates/blob/main/LICENSE) for the full text.
+
+---
+
+Made with ❤️ by **itslarss**

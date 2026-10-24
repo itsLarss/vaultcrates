@@ -2,91 +2,70 @@ package de.itslarss.vaultcrates.hook;
 
 import de.itslarss.vaultcrates.VaultCrates;
 import de.itslarss.vaultcrates.crate.Crate;
-import org.bukkit.entity.Entity;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
+import org.bukkit.event.Cancellable;
+import org.bukkit.event.Event;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerInteractEntityEvent;
-import org.bukkit.inventory.EquipmentSlot;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Soft-depend integration with ZNPCsPlus ({@code lol.pyr.znpcsplus}).
- * All ZNPCsPlus API calls happen via reflection so the plugin compiles and runs
- * even when ZNPCsPlus is absent.
+ * Soft-depend integration with ZNPCsPlus 2.x ({@code lol.pyr.znpcsplus}).
  *
- * <p>Listens to {@link PlayerInteractEntityEvent} and detects ZNPCsPlus NPCs
- * using reflection. If the NPC's ID/name maps to a crate, the crate animation
- * is triggered.</p>
+ * <p>ZNPCsPlus NPCs are packet-only, so this hook listens to ZNPCsPlus'
+ * {@code NpcInteractEvent} (registered via reflection) and matches the NPC by
+ * its id ({@code NpcEntry#getId()} — the id used in {@code /npc} commands).</p>
  */
 public class ZNPCsPlusHook implements Listener {
 
+    private static final String EVENT = "lol.pyr.znpcsplus.api.event.NpcInteractEvent";
+
     private final VaultCrates plugin;
 
-    /** Maps NPC string ID/name to crate name. */
+    /** ZNPCsPlus NPC id → crate name. */
     private final Map<String, String> npcIdToCrate = new HashMap<>();
 
     private boolean enabled = false;
 
-    // Cached reflection handles
-    private Method methodGetNpcById;   // ZNPCsPlus API lookup by entity or id
-    private Method methodGetId;        // NPC#getId() → String
-    private Method methodGetEntityId;  // NPC lookup via entity
+    private Method eventGetEntry;
+    private Method eventGetPlayer;
+    private Method eventGetClickType;
+    private Method entryGetId;
+    private Method entryGetNpc;
+    private Method npcGetLocation;
+    private Method npcGetWorld;
+    private Method locationToBukkit;
 
     public ZNPCsPlusHook(VaultCrates plugin) {
         this.plugin = plugin;
     }
 
-    // -------------------------------------------------------------------------
-    // Setup
-    // -------------------------------------------------------------------------
-
-    /**
-     * Attempts to load ZNPCsPlus API classes via reflection.
-     * If successful, registers this listener with Bukkit.
-     *
-     * @return {@code true} if ZNPCsPlus is present and reflection succeeded
-     */
     public boolean setup() {
+        if (!Bukkit.getPluginManager().isPluginEnabled("ZNPCsPlus")) return false;
         try {
-            // Presence check — main plugin class
-            Class<?> mainClass = Class.forName("lol.pyr.znpcsplus.ZNPCsPlus");
+            Class<?> raw   = Class.forName(EVENT);
+            Class<?> entry = Class.forName("lol.pyr.znpcsplus.api.npc.NpcEntry");
+            Class<?> npc   = Class.forName("lol.pyr.znpcsplus.api.npc.Npc");
+            eventGetEntry     = raw.getMethod("getEntry");
+            eventGetPlayer    = raw.getMethod("getPlayer");
+            eventGetClickType = raw.getMethod("getClickType");
+            entryGetId        = entry.getMethod("getId");
+            entryGetNpc       = entry.getMethod("getNpc");
+            npcGetLocation    = npc.getMethod("getLocation");
+            npcGetWorld       = npc.getMethod("getWorld");
+            locationToBukkit  = npcGetLocation.getReturnType().getMethod("toBukkitLocation", World.class);
 
-            // Try to locate an API or registry class for entity→NPC lookup
-            try {
-                Class<?> apiClass = Class.forName("lol.pyr.znpcsplus.api.NpcApi");
-                // Attempt common lookup methods
-                try {
-                    methodGetNpcById = apiClass.getMethod("getNpcByEntity", Entity.class);
-                } catch (NoSuchMethodException e1) {
-                    try {
-                        methodGetNpcById = apiClass.getMethod("get", Entity.class);
-                    } catch (NoSuchMethodException e2) {
-                        // Will fall back to iterating all NPCs
-                    }
-                }
-
-                // Resolve getId on NPC instances
-                try {
-                    Class<?> npcClass = Class.forName("lol.pyr.znpcsplus.api.npc.Npc");
-                    methodGetId = npcClass.getMethod("getId");
-                } catch (ClassNotFoundException | NoSuchMethodException ex) {
-                    try {
-                        Class<?> npcClass = Class.forName("lol.pyr.znpcsplus.npc.Npc");
-                        methodGetId = npcClass.getMethod("getId");
-                    } catch (ClassNotFoundException | NoSuchMethodException ignored) {}
-                }
-
-            } catch (ClassNotFoundException ignored) {
-                // No API class — entity matching will use custom name fallback
-            }
-
+            @SuppressWarnings("unchecked")
+            Class<? extends Event> type = (Class<? extends Event>) raw;
+            Bukkit.getPluginManager().registerEvent(type, this, EventPriority.HIGH,
+                    (l, event) -> { if (type.isInstance(event)) onInteract(event); }, plugin, true);
             enabled = true;
-            plugin.getServer().getPluginManager().registerEvents(this, plugin);
         } catch (Exception e) {
             enabled = false;
         }
@@ -101,31 +80,14 @@ public class ZNPCsPlusHook implements Listener {
     // NPC ↔ Crate mapping
     // -------------------------------------------------------------------------
 
-    /**
-     * Links a ZNPCsPlus NPC (identified by its string ID or name) to a crate.
-     *
-     * @param npcId     the NPC identifier as used in ZNPCsPlus config
-     * @param crateName the crate name to open on interaction
-     */
     public void link(String npcId, String crateName) {
         npcIdToCrate.put(npcId, crateName);
     }
 
-    /**
-     * Removes the crate link for the given NPC ID.
-     *
-     * @param npcId the NPC ID to unlink
-     */
     public void unlink(String npcId) {
         npcIdToCrate.remove(npcId);
     }
 
-    /**
-     * Returns the crate name linked to the given NPC ID, or {@code null} if none.
-     *
-     * @param npcId the NPC identifier
-     * @return the linked crate name, or {@code null}
-     */
     public String getLinkedCrate(String npcId) {
         return npcIdToCrate.get(npcId);
     }
@@ -138,48 +100,33 @@ public class ZNPCsPlusHook implements Listener {
     // Event
     // -------------------------------------------------------------------------
 
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
-    public void onInteractEntity(PlayerInteractEntityEvent event) {
-        if (!enabled) return;
-        if (event.getHand() != EquipmentSlot.HAND) return;
+    private void onInteract(Event event) {
+        try {
+            Object click = eventGetClickType.invoke(event);
+            if (click != null && "LEFT_CLICK".equals(click.toString())) return;
 
-        Entity entity = event.getRightClicked();
-        String npcId = resolveNpcId(entity);
-        if (npcId == null) return;
+            Object entry = eventGetEntry.invoke(event);
+            if (!(entryGetId.invoke(entry) instanceof String id)) return;
+            String crateName = npcIdToCrate.get(id);
+            Crate crate = crateName != null ? plugin.getCrateManager().getCrate(crateName) : null;
+            if (crate == null) return;
+            if (!(eventGetPlayer.invoke(event) instanceof Player player)) return;
 
-        String crateName = npcIdToCrate.get(npcId);
-        if (crateName == null) return;
+            Location loc = player.getLocation();
+            Object npc = entryGetNpc.invoke(entry);
+            if (npcGetWorld.invoke(npc) instanceof World world
+                    && locationToBukkit.invoke(npcGetLocation.invoke(npc), world) instanceof Location l) {
+                loc = l;
+            }
 
-        Crate crate = plugin.getCrateManager().getCrate(crateName);
-        if (crate == null) return;
-
-        Player player = event.getPlayer();
-        plugin.getAnimationManager().startAnimation(player, crate, entity.getLocation());
-        event.setCancelled(true);
+            if (event instanceof Cancellable c) c.setCancelled(true);
+            Location finalLoc = loc;
+            runSync(() -> plugin.getCrateListener().openCrate(player, crate, finalLoc));
+        } catch (Exception ignored) {}
     }
 
-    // -------------------------------------------------------------------------
-    // Reflection helpers
-    // -------------------------------------------------------------------------
-
-    /**
-     * Attempts to resolve the ZNPCsPlus NPC id/name for the given entity.
-     * Returns {@code null} if the entity is not a ZNPCsPlus NPC or on any error.
-     */
-    private String resolveNpcId(Entity entity) {
-        try {
-            if (methodGetNpcById != null) {
-                Object npc = methodGetNpcById.invoke(null, entity);
-                if (npc == null) return null;
-                if (methodGetId != null) {
-                    Object id = methodGetId.invoke(npc);
-                    if (id instanceof String s) return s;
-                }
-                return null;
-            }
-        } catch (Exception ignored) {}
-
-        // Fallback: entity custom name
-        return entity.getCustomName();
+    private void runSync(Runnable task) {
+        if (Bukkit.isPrimaryThread()) task.run();
+        else Bukkit.getScheduler().runTask(plugin, task);
     }
 }

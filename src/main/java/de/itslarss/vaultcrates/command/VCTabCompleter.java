@@ -139,6 +139,7 @@ public class VCTabCompleter implements TabCompleter {
         // /vc linknpc <crate>
         if (sub.equals("linknpc") && sender.hasPermission("vaultcrates.linknpc")) {
             if (args.length == 2) return crateNames(args[1]);
+            if (args.length == 3) return filter(List.of("fancynpcs", "znpcsplus", "znpcs"), args[2]);
         }
 
         // /vc pouch <sub> ...

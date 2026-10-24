@@ -7,16 +7,57 @@
 
     <groupId>de.itslarss</groupId>
     <artifactId>VaultCrates</artifactId>
-    <version>1.0.1</version>
+    <version>1.1.0</version>
     <packaging>jar</packaging>
 
     <name>VaultCrates</name>
-    <description>A feature-rich crate plugin for Paper 1.21.x (1.21 – 1.21.4+)</description>
+    <description>A feature-rich crate plugin for Paper 26.x (26.1 – 26.3)</description>
 
+    <!--
+        One jar per Minecraft line. Build with:
+          mvn package -P mc-26.1   →  VaultCrates-1.1.0-26.1.x.jar   (default)
+          mvn package -P mc-26.2   →  VaultCrates-1.1.1-26.2.jar
+          mvn package -P mc-26.3   →  VaultCrates-1.1.2-26.3.jar
+    -->
     <properties>
-        <java.version>21</java.version>
+        <java.version>25</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <plugin.version>1.1.0-26.1.x</plugin.version>
+        <mc.api.version>26.1</mc.api.version>
+        <mc.display>26.1.x</mc.display>
+        <paper.version>26.1.2.build.74-stable</paper.version>
     </properties>
+
+    <profiles>
+        <profile>
+            <id>mc-26.1</id>
+            <activation><activeByDefault>true</activeByDefault></activation>
+            <properties>
+                <plugin.version>1.1.0-26.1.x</plugin.version>
+                <mc.api.version>26.1</mc.api.version>
+                <mc.display>26.1.x</mc.display>
+                <paper.version>26.1.2.build.74-stable</paper.version>
+            </properties>
+        </profile>
+        <profile>
+            <id>mc-26.2</id>
+            <properties>
+                <plugin.version>1.1.1-26.2</plugin.version>
+                <mc.api.version>26.2</mc.api.version>
+                <mc.display>26.2</mc.display>
+                <paper.version>26.2.build.134-stable</paper.version>
+            </properties>
+        </profile>
+        <profile>
+            <id>mc-26.3</id>
+            <properties>
+                <plugin.version>1.1.2-26.3</plugin.version>
+                <mc.api.version>26.3</mc.api.version>
+                <mc.display>26.3</mc.display>
+                <paper.version>26.3.build.218-stable</paper.version>
+            </properties>
+        </profile>
+    </profiles>
 
     <repositories>
         <!-- Paper -->
@@ -27,7 +68,7 @@
         <!-- PlaceholderAPI -->
         <repository>
             <id>placeholderapi</id>
-            <url>https://repo.extendedclip.com/content/repositories/placeholderapi/</url>
+            <url>https://repo.extendedclip.com/releases/</url>
         </repository>
         <!-- JitPack (Vault) -->
         <repository>
@@ -41,7 +82,7 @@
         <dependency>
             <groupId>io.papermc.paper</groupId>
             <artifactId>paper-api</artifactId>
-            <version>1.21.1-R0.1-SNAPSHOT</version>
+            <version>${paper.version}</version>
             <scope>provided</scope>
         </dependency>
 
@@ -49,7 +90,7 @@
         <dependency>
             <groupId>me.clip</groupId>
             <artifactId>placeholderapi</artifactId>
-            <version>2.11.6</version>
+            <version>2.12.3</version>
             <scope>provided</scope>
         </dependency>
 
@@ -59,6 +100,12 @@
             <artifactId>VaultAPI</artifactId>
             <version>1.7.1</version>
             <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.bukkit</groupId>
+                    <artifactId>bukkit</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <!-- bStats -->
@@ -80,7 +127,7 @@
 
     <build>
         <defaultGoal>clean package</defaultGoal>
-        <finalName>VaultCrates-${project.version}</finalName>
+        <finalName>VaultCrates-${plugin.version}</finalName>
         <resources>
             <resource>
                 <directory>src/main/resources</directory>
@@ -92,10 +139,9 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.13.0</version>
+                <version>3.14.0</version>
                 <configuration>
-                    <source>${java.version}</source>
-                    <target>${java.version}</target>
+                    <release>${java.version}</release>
                     <encoding>UTF-8</encoding>
                 </configuration>
             </plugin>
@@ -110,11 +156,11 @@
                 </configuration>
             </plugin>
 
-            <!-- Shade Plugin -->
+            <!-- Shade Plugin (3.6.x bundles an ASM that understands Java 25 class files) -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>3.5.2</version>
+                <version>3.6.1</version>
                 <executions>
                     <execution>
                         <phase>package</phase>

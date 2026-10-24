@@ -7,52 +7,37 @@ import java.lang.reflect.Method;
 import java.util.Optional;
 
 /**
- * Soft-depend integration with ExecutableItems — zero compile-time dependency.
- * All ExecutableItems API calls happen via reflection so the plugin compiles and
- * runs even when ExecutableItems is absent.
+ * Soft-depend integration with ExecutableItems (via SCore) — zero compile-time dependency.
  *
- * <p>Class used: {@code com.ssomar.score.api.executableitems.ExecutableItemsAPI}</p>
+ * <p>Call chain: {@code ExecutableItemsAPI.getExecutableItemsManager()
+ * .getExecutableItem(id) → Optional<ExecutableItemInterface>
+ * .buildItem(amount, Optional<Player>)}</p>
+ *
+ * <p>Methods are resolved on the public API interfaces, not on the implementation
+ * classes, so reflection keeps working when SCore changes its internals.</p>
  */
 public class ExecutableItemsHook {
 
+    private static final String API      = "com.ssomar.score.api.executableitems.ExecutableItemsAPI";
+    private static final String MANAGER  = "com.ssomar.score.api.executableitems.config.ExecutableItemsManagerInterface";
+    private static final String ITEM     = "com.ssomar.score.api.executableitems.config.ExecutableItemInterface";
+
     private boolean enabled = false;
 
-    // Cached reflection handles
-    private Method methodGetManager;      // ExecutableItemsAPI.getExecutableItemManager()
-    private Method methodGetItem;         // manager.getExecutableItem(String) → Optional<?>
-    private Method methodBuildItem;       // executableItem.buildItem(int, Optional<Player>) → ItemStack
+    private Method methodGetManager;
+    private Method methodGetItem;
+    private Method methodBuildItem;
 
-    // -------------------------------------------------------------------------
-    // Setup
-    // -------------------------------------------------------------------------
-
-    /**
-     * Attempts to load ExecutableItems API classes via reflection.
-     *
-     * @return {@code true} if ExecutableItems is present and all methods resolved
-     */
     public boolean setup() {
         try {
-            Class<?> apiClass = Class.forName(
-                    "com.ssomar.score.api.executableitems.ExecutableItemsAPI");
-
-            methodGetManager = apiClass.getMethod("getExecutableItemManager");
-
-            // Invoke once to get the manager instance and resolve further methods
-            Object manager = methodGetManager.invoke(null);
-            if (manager == null) {
-                enabled = false;
-                return false;
+            Class<?> apiClass = Class.forName(API);
+            try {
+                methodGetManager = apiClass.getMethod("getExecutableItemsManager");
+            } catch (NoSuchMethodException old) {
+                methodGetManager = apiClass.getMethod("getExecutableItemManager");
             }
-
-            methodGetItem = manager.getClass().getMethod("getExecutableItem", String.class);
-
-            // Resolve buildItem from the type inside the Optional
-            // We call getExecutableItem with a dummy to determine the item class type
-            // Instead, find the method by iterating declared methods of the manager's class
-            // that returns Optional — then find buildItem on the wrapped type.
-            // We resolve buildItem lazily in getItem() to avoid a dummy-id call here.
-
+            methodGetItem   = Class.forName(MANAGER).getMethod("getExecutableItem", String.class);
+            methodBuildItem = Class.forName(ITEM).getMethod("buildItem", int.class, Optional.class);
             enabled = true;
         } catch (Exception e) {
             enabled = false;
@@ -64,54 +49,19 @@ public class ExecutableItemsHook {
         return enabled;
     }
 
-    // -------------------------------------------------------------------------
-    // Item retrieval
-    // -------------------------------------------------------------------------
-
     /**
-     * Builds an ExecutableItems item by its ID for the given player.
-     * Returns {@code null} on any failure (item not found, reflection error, etc.).
-     *
-     * @param id     the ExecutableItems item ID
-     * @param player the player context (used for placeholders inside the item)
-     * @return the built {@link ItemStack}, or {@code null}
+     * @param id     the ExecutableItems item id
+     * @param player placeholder context, may be {@code null}
+     * @return the built item, or {@code null} if unknown
      */
     public ItemStack getItem(String id, Player player) {
         if (!enabled || id == null) return null;
         try {
-            // Get manager fresh every time (handles reloads)
             Object manager = methodGetManager.invoke(null);
             if (manager == null) return null;
-
-            // Ensure getItem method is resolved on the current manager type
-            if (methodGetItem == null) {
-                methodGetItem = manager.getClass().getMethod("getExecutableItem", String.class);
-            }
-
-            Object optionalItem = methodGetItem.invoke(manager, id);
-            if (!(optionalItem instanceof Optional<?> opt)) return null;
-            if (opt.isEmpty()) return null;
-
-            Object executableItem = opt.get();
-
-            // Resolve buildItem lazily
-            if (methodBuildItem == null) {
-                // Try the common signature: buildItem(int amount, Optional<Player> player)
-                try {
-                    methodBuildItem = executableItem.getClass()
-                            .getMethod("buildItem", int.class, Optional.class);
-                } catch (NoSuchMethodException ex) {
-                    // Fallback: buildItem(int amount)
-                    methodBuildItem = executableItem.getClass().getMethod("buildItem", int.class);
-                }
-            }
-
-            if (methodBuildItem.getParameterCount() == 2) {
-                return (ItemStack) methodBuildItem.invoke(
-                        executableItem, 1, Optional.ofNullable(player));
-            } else {
-                return (ItemStack) methodBuildItem.invoke(executableItem, 1);
-            }
+            if (!(methodGetItem.invoke(manager, id) instanceof Optional<?> opt) || opt.isEmpty()) return null;
+            Object built = methodBuildItem.invoke(opt.get(), 1, Optional.ofNullable(player));
+            return built instanceof ItemStack is ? is : null;
         } catch (Exception e) {
             return null;
         }

@@ -2,97 +2,66 @@ package de.itslarss.vaultcrates.hook;
 
 import de.itslarss.vaultcrates.VaultCrates;
 import de.itslarss.vaultcrates.crate.Crate;
-import org.bukkit.entity.Entity;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
+import org.bukkit.event.Cancellable;
+import org.bukkit.event.Event;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerInteractEntityEvent;
-import org.bukkit.inventory.EquipmentSlot;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Soft-depend integration with FancyNpcs ({@code de.oliver.fancynpcs}).
- * All FancyNpcs API calls happen via reflection so the plugin compiles and runs
- * even when FancyNpcs is absent.
+ * Soft-depend integration with FancyNpcs 2.x ({@code de.oliver.fancynpcs}).
  *
- * <p>Uses reflection to call
- * {@code FancyNpcsPlugin.get().getNpcAdapter().getNpc(entity)} to detect NPC
- * entities. The NPC name is then matched against the configured mapping.</p>
+ * <p>FancyNpcs NPCs are packet-only — there is no Bukkit entity to click, so
+ * {@code PlayerInteractEntityEvent} never fires for them. This hook listens to
+ * FancyNpcs' own {@code NpcInteractEvent} (registered via reflection) and matches
+ * the NPC by its name ({@code NpcData#getName()}).</p>
  */
 public class FancyNpcsHook implements Listener {
 
+    private static final String EVENT = "de.oliver.fancynpcs.api.events.NpcInteractEvent";
+
     private final VaultCrates plugin;
 
-    /** Maps FancyNpcs NPC name to crate name. */
+    /** FancyNpcs NPC name → crate name. */
     private final Map<String, String> npcNameToCrate = new HashMap<>();
 
     private boolean enabled = false;
 
-    // Cached reflection handles
-    private Method methodGet;          // FancyNpcsPlugin.get() → FancyNpcsPlugin instance
-    private Method methodGetAdapter;   // FancyNpcsPlugin#getNpcAdapter() → NpcAdapter
-    private Method methodGetNpc;       // NpcAdapter#getNpc(Entity) → Npc (or null)
-    private Method methodGetData;      // Npc#getData() → NpcData (contains name)
-    private Method methodGetName;      // NpcData#getName() or Npc#getName() → String
+    private Method eventGetNpc;
+    private Method eventGetPlayer;
+    private Method eventGetTrigger;
+    private Method npcGetData;
+    private Method dataGetName;
+    private Method dataGetLocation;
 
     public FancyNpcsHook(VaultCrates plugin) {
         this.plugin = plugin;
     }
 
-    // -------------------------------------------------------------------------
-    // Setup
-    // -------------------------------------------------------------------------
-
-    /**
-     * Attempts to load FancyNpcs API classes via reflection.
-     * If successful, registers this listener with Bukkit.
-     *
-     * @return {@code true} if FancyNpcs is present and reflection succeeded
-     */
     public boolean setup() {
+        if (!Bukkit.getPluginManager().isPluginEnabled("FancyNpcs")) return false;
         try {
-            Class<?> pluginClass = Class.forName("de.oliver.fancynpcs.api.FancyNpcsPlugin");
+            Class<?> raw = Class.forName(EVENT);
+            Class<?> npc  = Class.forName("de.oliver.fancynpcs.api.Npc");
+            Class<?> data = Class.forName("de.oliver.fancynpcs.api.NpcData");
+            eventGetNpc     = raw.getMethod("getNpc");
+            eventGetPlayer  = raw.getMethod("getPlayer");
+            eventGetTrigger = raw.getMethod("getInteractionType");
+            npcGetData      = npc.getMethod("getData");
+            dataGetName     = data.getMethod("getName");
+            dataGetLocation = data.getMethod("getLocation");
 
-            // FancyNpcsPlugin.get() is a static method
-            methodGet = pluginClass.getMethod("get");
-
-            // Get the plugin instance to resolve further types
-            Object fancyPlugin = methodGet.invoke(null);
-            if (fancyPlugin == null) {
-                enabled = false;
-                return false;
-            }
-
-            // getNpcAdapter()
-            methodGetAdapter = fancyPlugin.getClass().getMethod("getNpcAdapter");
-            Object adapter = methodGetAdapter.invoke(fancyPlugin);
-            if (adapter == null) {
-                enabled = false;
-                return false;
-            }
-
-            // NpcAdapter#getNpc(Entity)
-            methodGetNpc = adapter.getClass().getMethod("getNpc", Entity.class);
-
-            // Determine how to extract the name from the Npc object
-            Class<?> npcReturnType = methodGetNpc.getReturnType();
-            // Try Npc#getData() → NpcData#getName() first
-            try {
-                methodGetData = npcReturnType.getMethod("getData");
-                Class<?> dataType = methodGetData.getReturnType();
-                methodGetName = dataType.getMethod("getName");
-            } catch (NoSuchMethodException e) {
-                // Fallback: Npc#getName() directly
-                methodGetData = null;
-                methodGetName = npcReturnType.getMethod("getName");
-            }
-
+            @SuppressWarnings("unchecked")
+            Class<? extends Event> type = (Class<? extends Event>) raw;
+            Bukkit.getPluginManager().registerEvent(type, this, EventPriority.HIGH,
+                    (l, event) -> { if (type.isInstance(event)) onInteract(event); }, plugin, true);
             enabled = true;
-            plugin.getServer().getPluginManager().registerEvents(this, plugin);
         } catch (Exception e) {
             enabled = false;
         }
@@ -107,31 +76,14 @@ public class FancyNpcsHook implements Listener {
     // NPC ↔ Crate mapping
     // -------------------------------------------------------------------------
 
-    /**
-     * Links a FancyNpcs NPC (identified by its name) to a crate.
-     *
-     * @param npcName   the NPC name as configured in FancyNpcs
-     * @param crateName the crate name to open on interaction
-     */
     public void link(String npcName, String crateName) {
         npcNameToCrate.put(npcName, crateName);
     }
 
-    /**
-     * Removes the crate link for the given NPC name.
-     *
-     * @param npcName the NPC name to unlink
-     */
     public void unlink(String npcName) {
         npcNameToCrate.remove(npcName);
     }
 
-    /**
-     * Returns the crate name linked to the given NPC name, or {@code null} if none.
-     *
-     * @param npcName the NPC name
-     * @return the linked crate name, or {@code null}
-     */
     public String getLinkedCrate(String npcName) {
         return npcNameToCrate.get(npcName);
     }
@@ -144,60 +96,28 @@ public class FancyNpcsHook implements Listener {
     // Event
     // -------------------------------------------------------------------------
 
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
-    public void onInteractEntity(PlayerInteractEntityEvent event) {
-        if (!enabled) return;
-        if (event.getHand() != EquipmentSlot.HAND) return;
+    private void onInteract(Event event) {
+        try {
+            Object trigger = eventGetTrigger.invoke(event);
+            if (trigger != null && !"RIGHT_CLICK".equals(trigger.toString())
+                    && !"ANY_CLICK".equals(trigger.toString())) return;
 
-        Entity entity = event.getRightClicked();
-        String npcName = resolveNpcName(entity);
-        if (npcName == null) return;
+            Object data = npcGetData.invoke(eventGetNpc.invoke(event));
+            if (!(dataGetName.invoke(data) instanceof String name)) return;
+            String crateName = npcNameToCrate.get(name);
+            Crate crate = crateName != null ? plugin.getCrateManager().getCrate(crateName) : null;
+            if (crate == null) return;
+            if (!(eventGetPlayer.invoke(event) instanceof Player player)) return;
+            Location loc = dataGetLocation.invoke(data) instanceof Location l ? l : player.getLocation();
 
-        String crateName = npcNameToCrate.get(npcName);
-        if (crateName == null) return;
-
-        Crate crate = plugin.getCrateManager().getCrate(crateName);
-        if (crate == null) return;
-
-        Player player = event.getPlayer();
-        plugin.getAnimationManager().startAnimation(player, crate, entity.getLocation());
-        event.setCancelled(true);
+            // Stop FancyNpcs from running the NPC's own actions
+            if (event instanceof Cancellable c) c.setCancelled(true);
+            runSync(() -> plugin.getCrateListener().openCrate(player, crate, loc));
+        } catch (Exception ignored) {}
     }
 
-    // -------------------------------------------------------------------------
-    // Reflection helpers
-    // -------------------------------------------------------------------------
-
-    /**
-     * Attempts to resolve the FancyNpcs NPC name for the given entity using the
-     * reflection chain:
-     * {@code FancyNpcsPlugin.get().getNpcAdapter().getNpc(entity).[getData().getName()]}
-     *
-     * @param entity the entity to look up
-     * @return the NPC name, or {@code null} if not a FancyNpcs NPC or on any error
-     */
-    private String resolveNpcName(Entity entity) {
-        try {
-            Object fancyPlugin = methodGet.invoke(null);
-            if (fancyPlugin == null) return null;
-
-            Object adapter = methodGetAdapter.invoke(fancyPlugin);
-            if (adapter == null) return null;
-
-            Object npc = methodGetNpc.invoke(adapter, entity);
-            if (npc == null) return null;
-
-            if (methodGetData != null) {
-                Object data = methodGetData.invoke(npc);
-                if (data == null) return null;
-                Object name = methodGetName.invoke(data);
-                return name instanceof String s ? s : null;
-            } else {
-                Object name = methodGetName.invoke(npc);
-                return name instanceof String s ? s : null;
-            }
-        } catch (Exception e) {
-            return null;
-        }
+    private void runSync(Runnable task) {
+        if (Bukkit.isPrimaryThread()) task.run();
+        else Bukkit.getScheduler().runTask(plugin, task);
     }
 }

@@ -10,7 +10,6 @@ import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
-import org.bukkit.Registry;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
@@ -165,8 +164,7 @@ public class Reward {
         if (enchSection != null) {
             for (String key : enchSection.getKeys(false)) {
                 int level = enchSection.getInt(key, 1);
-                Enchantment enchantment = Registry.ENCHANTMENT.get(
-                        NamespacedKey.minecraft(key.toLowerCase()));
+                Enchantment enchantment = lookupEnchantment(key);
                 if (enchantment != null) {
                     r.enchantments.add(new EnchantmentEntry(enchantment, level));
                 }
@@ -176,8 +174,7 @@ public class Reward {
                 if (ench == null || ench.isEmpty()) continue;
                 String[] parts = ench.split(":");
                 try {
-                    Enchantment enchantment = Registry.ENCHANTMENT.get(
-                            NamespacedKey.minecraft(parts[0].toLowerCase()));
+                    Enchantment enchantment = lookupEnchantment(parts[0]);
                     int level = parts.length > 1 ? NumberUtil.parseIntSafe(parts[1], 1) : 1;
                     if (enchantment != null) {
                         r.enchantments.add(new EnchantmentEntry(enchantment, level));
@@ -187,6 +184,18 @@ public class Reward {
         }
 
         return r;
+    }
+
+    /** Accepts "sharpness" or a namespaced id like "myplugin:soulbound". */
+    private static Enchantment lookupEnchantment(String id) {
+        String lower = id.trim().toLowerCase();
+        NamespacedKey key = lower.contains(":")
+                ? NamespacedKey.fromString(lower)
+                : NamespacedKey.minecraft(lower);
+        if (key == null) return null;
+        return io.papermc.paper.registry.RegistryAccess.registryAccess()
+                .getRegistry(io.papermc.paper.registry.RegistryKey.ENCHANTMENT)
+                .get(key);
     }
 
     // -------------------------------------------------------------------------
@@ -300,15 +309,13 @@ public class Reward {
             meta.lore(de.itslarss.vaultcrates.util.ColorUtil.toComponents(lores));
         }
 
-        // Glow
-        if (glow) {
-            org.bukkit.enchantments.Enchantment infinity =
-                    org.bukkit.Registry.ENCHANTMENT.get(org.bukkit.NamespacedKey.minecraft("infinity"));
-            if (infinity != null) {
-                meta.addEnchant(infinity, 1, true);
-                meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);
-            }
-        }
+        // Glow — use enchantment glint override (Paper 1.20.5+) instead of a fake
+        // INFINITY enchantment, which broke /enchant and anvil usage.
+        // For IA items we always set an explicit value so we override any glint that
+        // ItemsAdder itself may have added to the base item:
+        //   Glow: true  → always show glint
+        //   Glow: false → explicitly hide glint (overrides IA's own glow)
+        meta.setEnchantmentGlintOverride(glow ? Boolean.TRUE : Boolean.FALSE);
 
         item.setItemMeta(meta);
         appendFooter(item);

@@ -166,8 +166,8 @@ public class ZNPCsHook implements Listener {
         if (crate == null) return;
 
         Player player = event.getPlayer();
-        plugin.getAnimationManager().startAnimation(player, crate, entity.getLocation());
         event.setCancelled(true);
+        plugin.getCrateListener().openCrate(player, crate, entity.getLocation());
     }
 
     // -------------------------------------------------------------------------

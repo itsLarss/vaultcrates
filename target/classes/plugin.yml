@@ -1,11 +1,11 @@
 name: VaultCrates
-version: 1.0.1
+version: 1.1.2-26.3
 main: de.itslarss.vaultcrates.VaultCrates
-api-version: "1.21"
+api-version: "26.3"
 author: itslarss
-description: A feature-rich crate plugin for Paper 1.21.x
+description: A feature-rich crate plugin for Paper 26.3
 website: https://github.com/itslarss/VaultCrates
-softdepend: [PlaceholderAPI, Vault, ItemsAdder, Citizens, Oraxen, Nexo, ExecutableItems, MMOItems, ZNPCs, ZNPCsPlus, FancyNpcs]
+softdepend: [PlaceholderAPI, Vault, VaultUnlocked, ItemsAdder, Citizens, Oraxen, Nexo, ExecutableItems, MMOItems, ZNPCs, ZNPCsPlus, FancyNpcs]
 
 commands:
   vc:

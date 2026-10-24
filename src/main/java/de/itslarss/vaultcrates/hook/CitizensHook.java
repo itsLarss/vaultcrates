@@ -114,8 +114,8 @@ public class CitizensHook implements Listener {
         if (crate == null) return;
 
         Player player = event.getPlayer();
-        plugin.getAnimationManager().startAnimation(player, crate, entity.getLocation());
         event.setCancelled(true); // Prevent normal NPC interaction
+        plugin.getCrateListener().openCrate(player, crate, entity.getLocation());
     }
 
     // -------------------------------------------------------------------------
@@ -126,7 +126,7 @@ public class CitizensHook implements Listener {
      * Returns the Citizens NPC id for the given entity, or {@code null} if the
      * entity is not a Citizens NPC or if reflection fails.
      */
-    private Integer getNpcId(Entity entity) {
+    public Integer getNpcId(Entity entity) {
         try {
             Object registry = methodGetNPCRegistry.invoke(null);
             boolean isNpc   = (boolean) methodIsNPC.invoke(registry, entity);

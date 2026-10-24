@@ -1,11 +1,19 @@
 package de.itslarss.vaultcrates.hook;
 
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Entity;
+import org.bukkit.event.Cancellable;
+import org.bukkit.event.Event;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.Plugin;
 
 import java.lang.reflect.Method;
+import java.util.function.Predicate;
 
 /**
- * Soft-depend integration with ItemsAdder — zero compile-time dependency.
+ * Soft-depend integration with ItemsAdder (3.6 – 4.x) — zero compile-time dependency.
  * All ItemsAdder API calls happen via reflection so the plugin compiles and
  * runs without ItemsAdder being present on the server.
  */
@@ -13,39 +21,50 @@ public class ItemsAdderHook {
 
     private boolean enabled = false;
 
-    // Cached reflection handles — CustomStack
+    // CustomStack
     private Method methodGetInstance;
     private Method methodByItemStack;
     private Method methodGetItemStack;
     private Method methodGetNamespacedID;
 
-    // Cached reflection handle — FontImages (for :icon: placeholder processing)
-    private Method methodSetAllFontImages;
+    // CustomFurniture — maps any furniture entity (incl. hitbox/Interaction parts) to its base entity
+    private Method methodFurnitureByEntity;
+    private Method methodFurnitureGetEntity;
 
-    /**
-     * Attempts to load ItemsAdder API classes via reflection.
-     *
-     * @return {@code true} if ItemsAdder is present and all methods resolved
-     */
+    // :icon: replacement — IA 4.x: FontImages.FontImageWrapper.replaceFontImages(String),
+    // IA 3.x: FontImages.setAllFontImages(String)
+    private Method methodReplaceFontImages;
+
     public boolean setup() {
         try {
             Class<?> customStackClass = Class.forName("dev.lone.itemsadder.api.CustomStack");
-            methodGetInstance    = customStackClass.getMethod("getInstance", String.class);
-            methodByItemStack    = customStackClass.getMethod("byItemStack", ItemStack.class);
-            methodGetItemStack   = customStackClass.getMethod("getItemStack");
+            methodGetInstance     = customStackClass.getMethod("getInstance", String.class);
+            methodByItemStack     = customStackClass.getMethod("byItemStack", ItemStack.class);
+            methodGetItemStack    = customStackClass.getMethod("getItemStack");
             methodGetNamespacedID = customStackClass.getMethod("getNamespacedID");
             enabled = true;
         } catch (Exception e) {
             enabled = false;
+            return false;
         }
 
-        // FontImages — optional, don't fail setup if missing
         try {
-            Class<?> fontImagesClass = Class.forName("dev.lone.itemsadder.api.FontImages");
-            methodSetAllFontImages = fontImagesClass.getMethod("setAllFontImages", String.class);
-        } catch (Exception ignored) { /* not available in this IA version */ }
+            Class<?> furniture = Class.forName("dev.lone.itemsadder.api.CustomFurniture");
+            methodFurnitureByEntity  = furniture.getMethod("byAlreadySpawned", Entity.class);
+            methodFurnitureGetEntity = furniture.getMethod("getEntity");
+        } catch (Exception ignored) { /* very old IA */ }
 
-        return enabled;
+        try {
+            methodReplaceFontImages = Class.forName("dev.lone.itemsadder.api.FontImages.FontImageWrapper")
+                    .getMethod("replaceFontImages", String.class);
+        } catch (Exception newApiMissing) {
+            try {
+                methodReplaceFontImages = Class.forName("dev.lone.itemsadder.api.FontImages")
+                        .getMethod("setAllFontImages", String.class);
+            } catch (Exception ignored) { /* no font image support */ }
+        }
+
+        return true;
     }
 
     public boolean isEnabled() {
@@ -54,8 +73,6 @@ public class ItemsAdderHook {
 
     /**
      * Returns an ItemsAdder custom item by its namespace:id, or {@code null} if not found.
-     *
-     * @param namespacedId e.g. {@code "itemsadder:ruby_sword"}
      */
     public ItemStack getItem(String namespacedId) {
         if (!enabled) return null;
@@ -68,9 +85,6 @@ public class ItemsAdderHook {
         }
     }
 
-    /**
-     * Checks whether the given ItemStack is an ItemsAdder custom item.
-     */
     public boolean isCustomItem(ItemStack item) {
         if (!enabled || item == null) return false;
         try {
@@ -80,31 +94,16 @@ public class ItemsAdderHook {
         }
     }
 
-    /**
-     * Processes IA font-image placeholders ({@code :icon_name:}) in a string,
-     * replacing them with the actual Unicode characters from the resource pack.
-     *
-     * <p>Requires ItemsAdder to be loaded and {@code FontImages.setAllFontImages}
-     * to be available (IA 2.x+). Returns the original string unchanged if IA is
-     * not enabled or the method is not available.</p>
-     *
-     * <p>Example: {@code ":heart_of_sea: &6Rank"} → {@code "\uE001 &6Rank"}</p>
-     *
-     * @param text the raw text containing optional {@code :icon:} placeholders
-     * @return the text with all known placeholders replaced
-     */
+    /** Replaces {@code :icon_name:} placeholders with the resource-pack glyphs. */
     public String processText(String text) {
-        if (!enabled || methodSetAllFontImages == null || text == null) return text;
+        if (!enabled || methodReplaceFontImages == null || text == null) return text;
         try {
-            return (String) methodSetAllFontImages.invoke(null, text);
+            return (String) methodReplaceFontImages.invoke(null, text);
         } catch (Exception e) {
             return text;
         }
     }
 
-    /**
-     * Returns the namespaced id of an ItemsAdder item, or {@code null}.
-     */
     public String getNamespacedId(ItemStack item) {
         if (!enabled || item == null) return null;
         try {
@@ -113,6 +112,49 @@ public class ItemsAdderHook {
             return (String) methodGetNamespacedID.invoke(stack);
         } catch (Exception e) {
             return null;
+        }
+    }
+
+    /**
+     * IA furniture can consist of several entities (display + interaction hitbox).
+     * Returns the furniture's base entity for any of its parts, or {@code null}
+     * if the entity is not IA furniture.
+     */
+    public Entity getFurnitureBaseEntity(Entity entity) {
+        if (!enabled || methodFurnitureByEntity == null || entity == null) return null;
+        try {
+            Object furniture = methodFurnitureByEntity.invoke(null, entity);
+            if (furniture == null) return null;
+            return (Entity) methodFurnitureGetEntity.invoke(furniture);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
+     * Cancels ItemsAdder's own break and interact handling for furniture that
+     * belongs to a placed crate, so IA never picks the crate up or runs its
+     * furniture actions. VaultCrates handles those clicks itself.
+     */
+    public void registerFurnitureGuard(Plugin plugin, Predicate<Entity> isCrate) {
+        if (!enabled) return;
+        Listener owner = new Listener() {};
+        for (String name : new String[]{"FurnitureBreakEvent", "FurnitureInteractEvent"}) {
+            try {
+                Class<?> raw = Class.forName("dev.lone.itemsadder.api.Events." + name);
+                if (!Event.class.isAssignableFrom(raw)) continue;
+                @SuppressWarnings("unchecked")
+                Class<? extends Event> type = (Class<? extends Event>) raw;
+                Method getEntity = raw.getMethod("getBukkitEntity");
+                Bukkit.getPluginManager().registerEvent(type, owner, EventPriority.LOWEST, (l, event) -> {
+                    if (!type.isInstance(event) || !(event instanceof Cancellable c)) return;
+                    try {
+                        if (getEntity.invoke(event) instanceof Entity e && isCrate.test(e)) {
+                            c.setCancelled(true);
+                        }
+                    } catch (Exception ignored) {}
+                }, plugin, false);
+            } catch (Exception ignored) { /* event not present in this IA version */ }
         }
     }
 }

@@ -4,12 +4,11 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import net.kyori.adventure.text.Component;
 import org.bukkit.*;
-import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemFlag;
-import org.bukkit.Registry;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.profile.PlayerProfile;
 import org.bukkit.profile.PlayerTextures;
@@ -85,15 +84,21 @@ public final class ItemBuilder {
     }
 
     /**
-     * Adds a glow effect by applying an invisible enchantment.
-     * Uses the Registry API (compatible with all Paper 1.21.x versions).
+     * Controls the enchantment glint (glow effect) on the item.
+     *
+     * <p>Uses {@link ItemMeta#setEnchantmentGlintOverride(Boolean)} (Paper 1.20.5+) to
+     * explicitly enable or leave the glint as default, without adding a fake INFINITY
+     * enchantment that would break {@code /enchant} and anvil usage.</p>
+     *
+     * <ul>
+     *   <li>{@code glow = true}  → always show glint</li>
+     *   <li>{@code glow = false} → no override; glint shows only when the item is
+     *       actually enchanted (default Minecraft behaviour)</li>
+     * </ul>
      */
     public ItemBuilder glow(boolean glow) {
-        if (!glow) return this;
-        Enchantment infinity = Registry.ENCHANTMENT.get(NamespacedKey.minecraft("infinity"));
-        if (infinity != null) {
-            meta.addEnchant(infinity, 1, true);
-            meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+        if (glow) {
+            meta.setEnchantmentGlintOverride(true);
         }
         return this;
     }

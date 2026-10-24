@@ -27,7 +27,7 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
-import org.bukkit.event.player.PlayerInteractAtEntityEvent;
+import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.inventory.EquipmentSlot;
@@ -102,7 +102,7 @@ public class CrateListener implements Listener {
                 plugin.getGuiManager().openCratePreview(player, crate);
             }
         } else if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
-            handleCrateOpen(player, crate, block.getLocation());
+            openCrate(player, crate, block.getLocation());
         }
     }
 
@@ -227,21 +227,71 @@ public class CrateListener implements Listener {
      *       left-click previews use {@link PlayerInteractAtEntityEvent} which only
      *       fires on right-click — so we repurpose the damage event for that too).</li>
      * </ul>
+     *
+     * <p>Supports all IA furniture entity types: {@link ArmorStand},
+     * {@link org.bukkit.entity.Display} sub-types, and {@link org.bukkit.entity.Interaction}.</p>
      */
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = false)
-    public void onEntityInteract(PlayerInteractAtEntityEvent event) {
+    /** Player UUID → server tick of the last handled entity click (both events can fire for one click). */
+    private final java.util.Map<UUID, Integer> lastEntityClick = new java.util.HashMap<>();
+
+    // LOWEST: cancel before ItemsAdder runs its own furniture interaction.
+    // Armor stands only fire the "At" variant, which has its own HandlerList.
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = false)
+    public void onEntityInteractAt(org.bukkit.event.player.PlayerInteractAtEntityEvent event) {
+        handleEntityClick(event);
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = false)
+    public void onEntityInteract(PlayerInteractEntityEvent event) {
+        handleEntityClick(event);
+    }
+
+    private void handleEntityClick(PlayerInteractEntityEvent event) {
         if (event.getHand() != EquipmentSlot.HAND) return;
 
         Entity entity = event.getRightClicked();
-        if (!(entity instanceof ArmorStand)) return;
-
-        Crate crate = plugin.getCrateManager().getCrateAtEntity(entity.getUniqueId());
-        if (crate == null) return;
-
-        event.setCancelled(true);
-
         Player player = event.getPlayer();
-        handleCrateOpen(player, crate, entity.getLocation());
+
+        int tick = Bukkit.getCurrentTick();
+        Integer last = lastEntityClick.get(player.getUniqueId());
+        if (last != null && last == tick) {
+            if (isCrateOrLinked(entity)) event.setCancelled(true);
+            return;
+        }
+        if (!isCrateOrLinked(entity)) return;
+        lastEntityClick.put(player.getUniqueId(), tick);
+
+        UUID crateEntity = plugin.getCrateManager().resolveCrateEntityId(entity);
+        if (crateEntity != null) {
+            Crate crate = plugin.getCrateManager().getCrateAtEntity(crateEntity);
+            if (crate == null) return;
+            event.setCancelled(true);
+            openCrate(player, crate, entity.getLocation());
+            return;
+        }
+
+        Crate crate = linkedNpcCrate(entity);
+        if (crate == null) return;
+        event.setCancelled(true);
+        openCrate(player, crate, entity.getLocation());
+    }
+
+    private boolean isCrateOrLinked(Entity entity) {
+        return plugin.getCrateManager().resolveCrateEntityId(entity) != null
+                || linkedNpcCrate(entity) != null;
+    }
+
+    /** Crate linked to this entity via {@code /vc linknpc}, or {@code null}. */
+    private Crate linkedNpcCrate(Entity entity) {
+        if (plugin.getNpcManager() == null
+                || !plugin.getConfigManager().getBoolean("NPC.Enabled", true)) return null;
+        String linked = plugin.getNpcManager().getCrateForEntity(entity.getUniqueId());
+        return linked != null ? plugin.getCrateManager().getCrate(linked) : null;
+    }
+
+    @EventHandler
+    public void onQuit(org.bukkit.event.player.PlayerQuitEvent event) {
+        lastEntityClick.remove(event.getPlayer().getUniqueId());
     }
 
     // =========================================================================
@@ -249,21 +299,24 @@ public class CrateListener implements Listener {
     // =========================================================================
 
     /**
-     * Handles two furniture crate entity interactions via damage events:
+     * Handles furniture crate entity damage events:
      *
      * <ul>
-     *   <li><b>Admin sneak + left-click</b>: remove the crate registration and
-     *       let IA break the furniture naturally (drop the item).</li>
+     *   <li><b>Admin sneak + left-click</b>: shows the placement ID and instructs the
+     *       admin to use {@code /vc remove <id>}. Does NOT silently remove the crate —
+     *       this prevents accidental deletion.</li>
      *   <li><b>Normal left-click</b>: open the reward preview (non-sneaking players).</li>
      *   <li><b>Any other damage</b>: cancel — furniture crates should not be damaged.</li>
      * </ul>
+     *
+     * <p>Supports ArmorStand, ItemDisplay, Interaction, and other IA furniture entity types.</p>
      */
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = false)
+    // LOWEST: cancel before ItemsAdder breaks the furniture
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = false)
     public void onEntityDamage(EntityDamageByEntityEvent event) {
-        Entity entity = event.getEntity();
-        if (!(entity instanceof ArmorStand)) return;
-
-        Crate crate = plugin.getCrateManager().getCrateAtEntity(entity.getUniqueId());
+        UUID crateEntity = plugin.getCrateManager().resolveCrateEntityId(event.getEntity());
+        if (crateEntity == null) return;
+        Crate crate = plugin.getCrateManager().getCrateAtEntity(crateEntity);
         if (crate == null) return;
 
         // Always cancel the raw damage — we handle everything manually
@@ -272,21 +325,16 @@ public class CrateListener implements Listener {
         if (!(event.getDamager() instanceof Player player)) return;
 
         if (player.isSneaking() && player.hasPermission("vaultcrates.admin")) {
-            // Admin break: unregister, remove hologram, let IA handle the entity removal
-            CrateLocation cl = plugin.getCrateManager()
-                    .getCrateLocationAtEntity(entity.getUniqueId());
+            // Admin sneak + left-click: show placement ID instead of silently removing.
+            // Use /vc remove <id> to confirm the removal intentionally.
+            CrateLocation cl = plugin.getCrateManager().getCrateLocationAtEntity(crateEntity);
             String placementId = cl != null ? cl.getPlacementId() : "?";
 
-            plugin.getCrateManager().removeCrateAtEntity(entity.getUniqueId());
-            plugin.getHologramManager().removeHologram(
-                    plugin.getHologramManager().locationToId(entity.getLocation()));
-
             player.sendMessage(ColorUtil.colorize(
-                    "&7[&6VC&7] &aCrate &6" + crate.getName()
-                    + " &aremoved. &8(ID was: &7" + placementId + "&8)"));
-
-            // Kill the furniture ArmorStand so IA can drop the item back to the player
-            entity.remove();
+                    "&7[&6VC&7] &eCrate: &6" + crate.getName()
+                    + " &7| ID: &e" + placementId
+                    + "\n&7[&6VC&7] &7Use &e/vc remove " + placementId
+                    + " &7to remove this crate."));
 
         } else {
             // Normal left-click → preview
@@ -297,22 +345,20 @@ public class CrateListener implements Listener {
     }
 
     /**
-     * Cleans up furniture crate registration when a registered ArmorStand dies
-     * (e.g. removed by {@code /kill}, a world-cleanup plugin, or similar).
-     *
-     * <p>Admin sneak+left-click is handled in {@link #onEntityDamage} which calls
-     * {@code entity.remove()} — that does NOT fire {@code EntityDeathEvent}, so
-     * it is cleaned up there directly.  This handler catches all other cases.</p>
+     * Unregisters a furniture crate when its entity is permanently removed
+     * ({@code /kill}, death, cleanup plugins, IA breaking it, ...).
+     * Chunk unloads are ignored — the crate must survive those.
      */
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onEntityDeath(org.bukkit.event.entity.EntityDeathEvent event) {
-        Entity entity = event.getEntity();
-        if (!(entity instanceof ArmorStand)) return;
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onEntityRemove(org.bukkit.event.entity.EntityRemoveEvent event) {
+        var cause = event.getCause();
+        if (cause == org.bukkit.event.entity.EntityRemoveEvent.Cause.UNLOAD
+                || cause == org.bukkit.event.entity.EntityRemoveEvent.Cause.PLAYER_QUIT) return;
 
+        Entity entity = event.getEntity();
         Crate crate = plugin.getCrateManager().getCrateAtEntity(entity.getUniqueId());
         if (crate == null) return;
 
-        // Clean up silently — no admin message needed for external removal
         plugin.getCrateManager().removeCrateAtEntity(entity.getUniqueId());
         plugin.getHologramManager().removeHologram(
                 plugin.getHologramManager().locationToId(entity.getLocation()));
@@ -445,7 +491,12 @@ public class CrateListener implements Listener {
     // Core open logic (shared by block and furniture crates)
     // =========================================================================
 
-    private void handleCrateOpen(Player player, Crate crate, Location crateLoc) {
+    /**
+     * Opens a crate with every check a player-facing open needs: permission,
+     * running animation, creative mode, keys / economy. All entry points
+     * (blocks, furniture, NPC hooks) must go through here.
+     */
+    public void openCrate(Player player, Crate crate, Location crateLoc) {
         if (!player.hasPermission("vaultcrates.open")) {
             plugin.getMessages().send(player, "no-permission");
             return;

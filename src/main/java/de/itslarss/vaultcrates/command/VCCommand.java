@@ -92,7 +92,8 @@ public class VCCommand implements CommandExecutor {
             "&e/vc create <name>                    &7— Create new crate in-game",
             "&e/vc keyeditor <crate>                &7— Open key editor GUI",
             "&e/vc shop                              &7— Open key shop",
-            "&e/vc linknpc <crate>                  &7— Link looked-at NPC to crate",
+            "&e/vc linknpc <crate>                  &7— Link nearest NPC/entity to crate",
+            "&e/vc linknpc <crate> fancynpcs <name> &7— Link a FancyNpcs/ZNPCsPlus NPC",
             "&e/vc placements                        &7— List all placed crate instances",
             "&e/vc remove <id>                       &7— Remove a placed crate by ID",
             "&e/vc key <give|set|balance|...> ...   &7— Virtual key management",
@@ -507,7 +508,10 @@ public class VCCommand implements CommandExecutor {
     private void handleLinkNpc(CommandSender sender, String[] args) {
         if (!(sender instanceof Player player)) { msg(sender, "&cThis command is for players only."); return; }
         if (!sender.hasPermission("vaultcrates.linknpc")) { noPermission(sender); return; }
-        if (args.length < 2) { usage(sender, "/vc linknpc <crate>"); return; }
+        if (args.length < 2) {
+            usage(sender, "/vc linknpc <crate> [fancynpcs|znpcsplus|znpcs <npc>]");
+            return;
+        }
 
         Crate crate = plugin.getCrateManager().getCrate(args[1]);
         if (crate == null) { msg(sender, "&cCrate &e" + args[1] + " &cnot found."); return; }
@@ -517,24 +521,59 @@ public class VCCommand implements CommandExecutor {
             return;
         }
 
-        // Try to find a nearby NPC entity the player is looking at
-        org.bukkit.entity.Entity target = findNearbyNpc(player);
-        if (target == null) {
-            msg(sender, "&cNo NPC found nearby. Stand close to an NPC and try again.");
+        var npcs = plugin.getNpcManager();
+
+        // Packet NPCs have no Bukkit entity — link them by their name/id
+        if (args.length >= 4) {
+            String type = args[2].toLowerCase();
+            String npc  = args[3];
+            switch (type) {
+                case "fancynpcs" -> {
+                    if (!npcs.getFancyNpcsHook().isEnabled()) { msg(sender, "&cFancyNpcs is not installed."); return; }
+                    npcs.linkFancyNpcs(npc, crate.getName());
+                }
+                case "znpcsplus" -> {
+                    if (!npcs.getZnpcsPlusHook().isEnabled()) { msg(sender, "&cZNPCsPlus is not installed."); return; }
+                    npcs.linkZNPCsPlus(npc, crate.getName());
+                }
+                case "znpcs" -> {
+                    if (!npcs.getZnpcsHook().isEnabled()) { msg(sender, "&cZNPCs is not installed."); return; }
+                    npcs.linkZNPCs(npc, crate.getName());
+                }
+                default -> { usage(sender, "/vc linknpc <crate> [fancynpcs|znpcsplus|znpcs <npc>]"); return; }
+            }
+            msg(sender, "&aLinked " + type + " NPC &e" + npc + " &ato crate &6" + crate.getName() + "&a.");
             return;
         }
 
-        plugin.getNpcManager().linkEntity(target.getUniqueId(), crate.getName());
-        msg(sender, "&aLinked NPC &e" + target.getUniqueId() + " &ato crate &6" + crate.getName() + "&a.");
+        org.bukkit.entity.Entity target = findNearbyNpc(player);
+        if (target == null) {
+            msg(sender, "&cNo NPC found nearby. Stand close to an NPC and try again.");
+            msg(sender, "&7FancyNpcs / ZNPCsPlus: &e/vc linknpc " + crate.getName() + " fancynpcs <name>");
+            return;
+        }
+
+        // Citizens NPCs keep their id across respawns, their entity UUID does not
+        Integer citizensId = npcs.getCitizensHook().isEnabled()
+                ? npcs.getCitizensHook().getNpcId(target) : null;
+        if (citizensId != null) {
+            npcs.linkCitizens(citizensId, crate.getName());
+            msg(sender, "&aLinked Citizens NPC &e#" + citizensId + " &ato crate &6" + crate.getName() + "&a.");
+            return;
+        }
+
+        npcs.linkEntity(target.getUniqueId(), crate.getName());
+        msg(sender, "&aLinked &e" + target.getType().name().toLowerCase()
+                + " &7(" + target.getUniqueId() + ") &ato crate &6" + crate.getName() + "&a.");
     }
 
-    /** Finds the nearest entity within 3 blocks that is not a player. */
+    /** Finds the nearest non-player entity within 3 blocks (Citizens NPCs count as NPCs). */
     private org.bukkit.entity.Entity findNearbyNpc(Player player) {
         org.bukkit.Location loc = player.getLocation();
         org.bukkit.entity.Entity nearest = null;
         double nearestDist = 4.0;
         for (org.bukkit.entity.Entity e : player.getNearbyEntities(3, 3, 3)) {
-            if (e instanceof Player) continue;
+            if (e instanceof Player && !e.hasMetadata("NPC")) continue;
             double dist = e.getLocation().distance(loc);
             if (dist < nearestDist) {
                 nearestDist = dist;

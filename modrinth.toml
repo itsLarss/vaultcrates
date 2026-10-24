@@ -1,0 +1,67 @@
+# ============================================================
+# Modrinth Publishing Configuration
+# Used by the modrinth-publish Maven plugin or uploaded manually.
+# https://modrinth.com/plugin/vaultcrates
+# ============================================================
+
+schema-version = 1
+
+# Project slug on Modrinth (matches the URL: modrinth.com/plugin/<slug>)
+project-id = "vaultcrates"
+
+# One upload per Minecraft line — edit version-number, file, game-versions
+# and changelog per upload (full changelogs: changelogs/<version>.md):
+#   mvn package -P mc-26.1 → 1.1.0-26.1.x  | game-versions 26.1, 26.1.1, 26.1.2
+#   mvn package -P mc-26.2 → 1.1.1-26.2    | game-versions 26.2
+#   mvn package -P mc-26.3 → 1.1.2-26.3    | game-versions 26.3
+# The update checker filters by game version, so the mapping must be exact.
+
+# Displayed version number
+version-number = "1.1.0-26.1.x"
+
+# release | beta | alpha
+version-type = "release"
+
+# File to upload (relative to project root after mvn package)
+file = "target/VaultCrates-1.1.0-26.1.x.jar"
+
+# Changelog shown on the version page (Markdown supported)
+changelog = """
+See changelogs/1.1.0-26.1.x.md — paste its content here before uploading.
+
+## 1.0.0 — Initial Release
+
+- 12 unique crate animations
+- Physical & virtual key system with anti-dupe UUID tracking
+- Pity system and per-reward limits
+- Virtual key shop (requires Vault)
+- Pouches with configurable random rewards
+- Placement ID system — each placed crate gets a unique ID
+- In-game GUI editor and key editor
+- Reward preview GUI with normalised drop percentages
+- Best Prizes pool, bundled items, selectable rewards, milestones
+- NPC support: Citizens, ZNPCs, ZNPCsPlus, FancyNpcs
+- Multi-language: English, German, French, Spanish (+ custom locale support)
+- Storage backends: JSON (default), SQLite, MySQL
+- Full developer API with custom events
+- Config versioning — missing keys auto-filled on update
+"""
+
+# Game versions this release supports
+game-versions = [
+    "26.1",
+    "26.1.1",
+    "26.1.2",
+]
+
+# Loaders
+loaders = ["paper", "folia"]
+
+# Dependencies
+[[dependencies]]
+project-id = "P7dR8mSH"   # PlaceholderAPI (optional)
+dependency-type = "optional"
+
+[[dependencies]]
+project-id = "jv2ESkoB"   # Vault (optional)
+dependency-type = "optional"
