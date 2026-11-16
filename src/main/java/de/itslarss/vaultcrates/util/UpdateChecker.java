@@ -136,9 +136,11 @@ public class UpdateChecker {
     }
 
     private static int[] semver(String v) {
-        // "1.1.0-26.1.x" → "1.1.0": the suffix is the MC target, not part of the plugin version
-        int dash = v.indexOf('-');
-        if (dash >= 0) v = v.substring(0, dash);
+        // "1.1.3+26.1.x" → "1.1.3": the suffix is the MC target, not part of the plugin version
+        // ("-" covers the older 1.1.0-26.1.x naming)
+        int cut = v.indexOf('+');
+        if (cut < 0) cut = v.indexOf('-');
+        if (cut >= 0) v = v.substring(0, cut);
         String[] parts = v.split("\\.");
         int[] nums = new int[parts.length];
         for (int i = 0; i < parts.length; i++) {

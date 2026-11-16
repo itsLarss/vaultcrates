@@ -7,22 +7,24 @@
 
     <groupId>de.itslarss</groupId>
     <artifactId>VaultCrates</artifactId>
-    <version>1.1.0</version>
+    <version>1.1.3</version>
     <packaging>jar</packaging>
 
     <name>VaultCrates</name>
-    <description>A feature-rich crate plugin for Paper 26.x (26.1 – 26.3)</description>
+    <description>A feature-rich crate plugin for Paper 1.21.x and 26.x</description>
 
     <!--
-        One jar per Minecraft line. Build with:
-          mvn package -P mc-26.1   →  VaultCrates-1.1.0-26.1.x.jar   (default)
-          mvn package -P mc-26.2   →  VaultCrates-1.1.1-26.2.jar
-          mvn package -P mc-26.3   →  VaultCrates-1.1.2-26.3.jar
+        Semantic versioning: one plugin version for every Minecraft line, the
+        target is appended as build metadata after "+". Build with:
+          mvn package -P mc-1.21   →  VaultCrates-1.1.3+1.21.x.jar   (Java 21)
+          mvn package -P mc-26.1   →  VaultCrates-1.1.3+26.1.x.jar   (default, Java 25)
+          mvn package -P mc-26.2   →  VaultCrates-1.1.3+26.2.jar     (Java 25)
+          mvn package -P mc-26.3   →  VaultCrates-1.1.3+26.3.jar     (Java 25)
     -->
     <properties>
         <java.version>25</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <plugin.version>1.1.0-26.1.x</plugin.version>
+        <plugin.version>${project.version}+26.1.x</plugin.version>
         <mc.api.version>26.1</mc.api.version>
         <mc.display>26.1.x</mc.display>
         <paper.version>26.1.2.build.74-stable</paper.version>
@@ -30,10 +32,20 @@
 
     <profiles>
         <profile>
+            <id>mc-1.21</id>
+            <properties>
+                <java.version>21</java.version>
+                <plugin.version>${project.version}+1.21.x</plugin.version>
+                <mc.api.version>1.21</mc.api.version>
+                <mc.display>1.21.x</mc.display>
+                <paper.version>1.21.1-R0.1-SNAPSHOT</paper.version>
+            </properties>
+        </profile>
+        <profile>
             <id>mc-26.1</id>
             <activation><activeByDefault>true</activeByDefault></activation>
             <properties>
-                <plugin.version>1.1.0-26.1.x</plugin.version>
+                <plugin.version>${project.version}+26.1.x</plugin.version>
                 <mc.api.version>26.1</mc.api.version>
                 <mc.display>26.1.x</mc.display>
                 <paper.version>26.1.2.build.74-stable</paper.version>
@@ -42,7 +54,7 @@
         <profile>
             <id>mc-26.2</id>
             <properties>
-                <plugin.version>1.1.1-26.2</plugin.version>
+                <plugin.version>${project.version}+26.2</plugin.version>
                 <mc.api.version>26.2</mc.api.version>
                 <mc.display>26.2</mc.display>
                 <paper.version>26.2.build.134-stable</paper.version>
@@ -51,7 +63,7 @@
         <profile>
             <id>mc-26.3</id>
             <properties>
-                <plugin.version>1.1.2-26.3</plugin.version>
+                <plugin.version>${project.version}+26.3</plugin.version>
                 <mc.api.version>26.3</mc.api.version>
                 <mc.display>26.3</mc.display>
                 <paper.version>26.3.build.218-stable</paper.version>

@@ -2,12 +2,12 @@
 
 # VaultCrates
 
-**A feature-rich, fully animated crate plugin for Paper 26.x**
+**A feature-rich, fully animated crate plugin for Paper 1.21.x and 26.x**
 
 No NMS · No legacy libraries · No external hologram plugin required
 
-[![Paper](https://img.shields.io/badge/Paper-26.1%20%E2%80%93%2026.3-F96854?style=flat-square)](https://papermc.io)
-[![Java](https://img.shields.io/badge/Java-25+-007396?style=flat-square&logo=openjdk)](https://adoptium.net)
+[![Paper](https://img.shields.io/badge/Paper-1.21%20%E2%80%93%2026.3-F96854?style=flat-square)](https://papermc.io)
+[![Java](https://img.shields.io/badge/Java-21+%20%2F%2025+-007396?style=flat-square&logo=openjdk)](https://adoptium.net)
 [![Modrinth](https://img.shields.io/modrinth/dt/vaultcrates?style=flat-square&logo=modrinth&color=00AF5C)](https://modrinth.com/plugin/vaultcrates)
 [![License](https://img.shields.io/badge/License-GPL--3.0-blue?style=flat-square)](https://github.com/itsLarss/vaultcrates/blob/main/LICENSE)
 
@@ -42,19 +42,21 @@ No NMS · No legacy libraries · No external hologram plugin required
 
 | | |
 |---|---|
-| Server | **Paper** (or forks) 26.1.x, 26.2 or 26.3 |
-| Java | **25+** |
+| Server | **Paper** (or forks) 1.21 – 1.21.11, 26.1.x, 26.2 or 26.3 |
+| Java | **21+** for 1.21.x, **25+** for 26.x |
 
 ### Which jar do I need?
 
+Every Minecraft line gets the same plugin version; the part after `+` names the Minecraft target.
+
 | Your server | Download |
 |---|---|
-| 26.1 – 26.1.x | `VaultCrates-1.1.0-26.1.x.jar` |
-| 26.2.x | `VaultCrates-1.1.1-26.2.jar` |
-| 26.3.x | `VaultCrates-1.1.2-26.3.jar` |
+| 1.21 – 1.21.11 | `VaultCrates-1.1.3+1.21.x.jar` |
+| 26.1 – 26.1.x | `VaultCrates-1.1.3+26.1.x.jar` |
+| 26.2.x | `VaultCrates-1.1.3+26.2.jar` |
+| 26.3.x | `VaultCrates-1.1.3+26.3.jar` |
 
 Each jar refuses to load on a Minecraft version older than the one it was built for.
-For Minecraft 1.21.x, use VaultCrates **1.0.1**.
 
 ### Optional soft-dependencies
 
@@ -403,12 +405,13 @@ public void onCrateOpened(CrateOpenedEvent e) {
 
 ## 🛠️ Building from source
 
-Requires JDK 25 and Maven.
+Requires JDK 25 and Maven (the 1.21.x build targets Java 21 bytecode).
 
 ```bash
-mvn package -P mc-26.1   # → target/VaultCrates-1.1.0-26.1.x.jar
-mvn package -P mc-26.2   # → target/VaultCrates-1.1.1-26.2.jar
-mvn package -P mc-26.3   # → target/VaultCrates-1.1.2-26.3.jar
+mvn package -P mc-1.21   # → target/VaultCrates-1.1.3+1.21.x.jar
+mvn package -P mc-26.1   # → target/VaultCrates-1.1.3+26.1.x.jar
+mvn package -P mc-26.2   # → target/VaultCrates-1.1.3+26.2.jar
+mvn package -P mc-26.3   # → target/VaultCrates-1.1.3+26.3.jar
 ```
 
 ---

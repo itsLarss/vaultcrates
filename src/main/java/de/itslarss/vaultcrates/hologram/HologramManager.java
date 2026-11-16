@@ -3,20 +3,30 @@ package de.itslarss.vaultcrates.hologram;
 import de.itslarss.vaultcrates.VaultCrates;
 import de.itslarss.vaultcrates.crate.Crate;
 import de.itslarss.vaultcrates.util.LocationUtil;
+import org.bukkit.Chunk;
 import org.bukkit.Location;
+import org.bukkit.World;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
+import org.bukkit.event.world.ChunkLoadEvent;
+import org.bukkit.event.world.ChunkUnloadEvent;
 
 import java.util.*;
 
 /**
- * Manages all active crate holograms in the world.
- * Holograms are spawned as {@link org.bukkit.entity.TextDisplay} entities and are
- * non-persistent, so they must be re-created on every server start.
+ * Manages all crate holograms.
+ *
+ * <p>Holograms are non-persistent {@link org.bukkit.entity.TextDisplay} entities, so the
+ * server discards them whenever their chunk unloads. This manager therefore keeps every
+ * registered hologram even while it is not in the world, spawns it only into loaded
+ * chunks, and re-spawns it each time its chunk loads again.</p>
  */
-public class HologramManager {
+public class HologramManager implements Listener {
 
     private final VaultCrates plugin;
 
-    /** Active holograms keyed by their unique ID. */
+    /** All registered holograms keyed by ID — spawned or waiting for their chunk to load. */
     private final Map<String, CrateHologram> holograms = new LinkedHashMap<>();
 
     public HologramManager(VaultCrates plugin) {
@@ -28,24 +38,23 @@ public class HologramManager {
     // -------------------------------------------------------------------------
 
     /**
-     * Spawns a new hologram at the base location with the given lines.
-     * If a hologram with the same ID already exists it is replaced.
+     * Registers a hologram and spawns it if its chunk is loaded; otherwise it
+     * appears as soon as the chunk loads. An existing hologram with the same ID
+     * is replaced.
      *
      * @param id    the unique identifier (typically the serialised location)
      * @param base  the block location above which the hologram appears
      * @param lines the text lines (top to bottom)
      */
     public void spawnHologram(String id, Location base, List<String> lines) {
-        if (base == null || base.getWorld() == null || lines == null || lines.isEmpty()) return;
+        if (base == null || !base.isWorldLoaded() || lines == null || lines.isEmpty()) return;
         removeHologram(id);
         CrateHologram hologram = new CrateHologram(id, base, lines);
-        hologram.spawn();
-        if (hologram.isSpawned()) {
-            holograms.put(id, hologram);
-        }
+        holograms.put(id, hologram);
+        if (isChunkLoaded(base)) hologram.spawn();
     }
 
-    /** Removes the hologram with the given ID. */
+    /** Unregisters the hologram with the given ID and removes it from the world. */
     public void removeHologram(String id) {
         CrateHologram existing = holograms.remove(id);
         if (existing != null) existing.remove();
@@ -62,7 +71,9 @@ public class HologramManager {
      */
     public void updateHologram(String id, List<String> newLines) {
         CrateHologram existing = holograms.get(id);
-        if (existing != null) existing.update(newLines);
+        if (existing == null) return;
+        if (isChunkLoaded(existing.getBaseLocation())) existing.update(newLines);
+        else existing.setLines(newLines);
     }
 
     /** Returns {@code true} if a hologram with the given ID is registered. */
@@ -75,12 +86,12 @@ public class HologramManager {
         return holograms.get(id);
     }
 
-    /** Returns an unmodifiable view of all active holograms. */
+    /** Returns an unmodifiable view of all registered holograms. */
     public Collection<CrateHologram> getHolograms() {
         return Collections.unmodifiableCollection(holograms.values());
     }
 
-    /** Removes all active holograms. */
+    /** Unregisters and removes all holograms. */
     public void removeAll() {
         holograms.values().forEach(CrateHologram::remove);
         holograms.clear();
@@ -113,6 +124,49 @@ public class HologramManager {
         spawnHologram(tempId, base, lines);
         plugin.getServer().getScheduler().runTaskLater(plugin,
                 () -> removeHologram(tempId), durationTicks);
+    }
+
+    // -------------------------------------------------------------------------
+    // Chunk tracking
+    // -------------------------------------------------------------------------
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onChunkLoad(ChunkLoadEvent event) {
+        Chunk chunk = event.getChunk();
+        if (inChunk(chunk).isEmpty()) return;
+        // Spawn on the next tick — adding entities while the chunk is still loading is unsafe
+        plugin.getServer().getScheduler().runTask(plugin, () -> {
+            if (!chunk.isLoaded()) return;
+            for (CrateHologram hologram : inChunk(chunk)) {
+                if (!hologram.isSpawned()) hologram.spawn();
+            }
+        });
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onChunkUnload(ChunkUnloadEvent event) {
+        // The server would discard the non-persistent displays anyway; drop our
+        // references so the next chunk load spawns fresh ones
+        for (CrateHologram hologram : inChunk(event.getChunk())) hologram.remove();
+    }
+
+    private List<CrateHologram> inChunk(Chunk chunk) {
+        World world = chunk.getWorld();
+        int cx = chunk.getX(), cz = chunk.getZ();
+        List<CrateHologram> result = new ArrayList<>(0);
+        for (CrateHologram hologram : holograms.values()) {
+            Location base = hologram.getBaseLocation();
+            if (base.isWorldLoaded() && world.equals(base.getWorld())
+                    && base.getBlockX() >> 4 == cx && base.getBlockZ() >> 4 == cz) {
+                result.add(hologram);
+            }
+        }
+        return result;
+    }
+
+    private static boolean isChunkLoaded(Location loc) {
+        return loc.isWorldLoaded()
+                && loc.getWorld().isChunkLoaded(loc.getBlockX() >> 4, loc.getBlockZ() >> 4);
     }
 
     // -------------------------------------------------------------------------

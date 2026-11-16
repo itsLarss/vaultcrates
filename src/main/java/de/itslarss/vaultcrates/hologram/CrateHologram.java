@@ -1,7 +1,6 @@
 package de.itslarss.vaultcrates.hologram;
 
 import de.itslarss.vaultcrates.util.ColorUtil;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Location;
 import org.bukkit.entity.Display;
 import org.bukkit.entity.TextDisplay;
@@ -48,8 +47,7 @@ public class CrateHologram {
             final String text = lines.get(i);
 
             TextDisplay td = lineLoc.getWorld().spawn(lineLoc, TextDisplay.class, d -> {
-                d.text(LegacyComponentSerializer.legacyAmpersand()
-                        .deserialize(ColorUtil.colorize(text)));
+                d.text(ColorUtil.toComponent(text));
                 d.setBillboard(Display.Billboard.CENTER);
                 d.setAlignment(TextDisplay.TextAlignment.CENTER);
                 d.setGravity(false);
@@ -78,6 +76,11 @@ public class CrateHologram {
         remove();
         this.lines = new ArrayList<>(newLines);
         spawn();
+    }
+
+    /** Replaces the lines without spawning (used while the chunk is unloaded). */
+    void setLines(List<String> newLines) {
+        this.lines = new ArrayList<>(newLines);
     }
 
     /**

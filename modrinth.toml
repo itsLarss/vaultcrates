@@ -11,23 +11,24 @@ project-id = "vaultcrates"
 
 # One upload per Minecraft line — edit version-number, file, game-versions
 # and changelog per upload (full changelogs: changelogs/<version>.md):
-#   mvn package -P mc-26.1 → 1.1.0-26.1.x  | game-versions 26.1, 26.1.1, 26.1.2
-#   mvn package -P mc-26.2 → 1.1.1-26.2    | game-versions 26.2
-#   mvn package -P mc-26.3 → 1.1.2-26.3    | game-versions 26.3
+#   mvn package -P mc-1.21 → 1.1.3+1.21.x | game-versions 1.21 … 1.21.11
+#   mvn package -P mc-26.1 → 1.1.3+26.1.x | game-versions 26.1, 26.1.1, 26.1.2
+#   mvn package -P mc-26.2 → 1.1.3+26.2   | game-versions 26.2
+#   mvn package -P mc-26.3 → 1.1.3+26.3   | game-versions 26.3
 # The update checker filters by game version, so the mapping must be exact.
 
 # Displayed version number
-version-number = "1.1.0-26.1.x"
+version-number = "1.1.3+26.1.x"
 
 # release | beta | alpha
 version-type = "release"
 
 # File to upload (relative to project root after mvn package)
-file = "target/VaultCrates-1.1.0-26.1.x.jar"
+file = "target/VaultCrates-1.1.3+26.1.x.jar"
 
 # Changelog shown on the version page (Markdown supported)
 changelog = """
-See changelogs/1.1.0-26.1.x.md — paste its content here before uploading.
+See changelogs/1.1.3.md — paste its content here before uploading.
 
 ## 1.0.0 — Initial Release
 

@@ -269,6 +269,7 @@ public final class VaultCrates extends JavaPlugin {
         var pm = getServer().getPluginManager();
         crateListener = new CrateListener(this);
         pm.registerEvents(crateListener, this);
+        pm.registerEvents(hologramManager, this);
         itemsAdderHook.registerFurnitureGuard(this,
                 e -> crateManager.resolveCrateEntityId(e) != null);
         pm.registerEvents(new PouchListener(this), this);
